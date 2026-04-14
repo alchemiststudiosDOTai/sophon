@@ -1,0 +1,7 @@
+[book]
+authors = ["search-cli authors"]
+language = "en"
+src = "docs"
+title = "sophon-cli Documentation"
+
+[output.html]
