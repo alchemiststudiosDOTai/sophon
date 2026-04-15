@@ -174,7 +174,10 @@ mod tests {
             );
 
             let body = serde_json::to_value(body).unwrap();
-            assert_eq!(body.get("category"), Some(&Value::String("news".to_string())));
+            assert_eq!(
+                body.get("category"),
+                Some(&Value::String("news".to_string()))
+            );
             assert_eq!(body.get("numResults"), Some(&Value::from(3)));
             assert_eq!(body.get("moderation"), Some(&Value::Bool(true)));
             assert_eq!(body.get("type"), Some(&Value::String("auto".to_string())));
@@ -248,6 +251,67 @@ mod tests {
                 assert_eq!(result.snippet.as_deref(), Some("Summary text"));
             }
             other => panic!("expected news result, got {other:?}"),
+        }
+    }
+
+    #[tokio::test]
+    async fn test_exa_provider_rejects_unsupported_query_fields() {
+        let provider = ExaProvider::new(
+            MockHttpClient {
+                response_json: "{}".to_string(),
+            },
+            ExaConfig {
+                api_key: "test-key".to_string(),
+                base_url: "https://api.exa.ai".to_string(),
+            },
+        );
+
+        let unsupported_queries = vec![
+            SearchQuery {
+                text: "images".to_string(),
+                search_type: SearchType::Images,
+                limit: None,
+                offset: None,
+                safe_search: None,
+                country: None,
+                language: None,
+                time_range: None,
+            },
+            SearchQuery {
+                text: "videos".to_string(),
+                search_type: SearchType::Videos,
+                limit: None,
+                offset: None,
+                safe_search: None,
+                country: None,
+                language: None,
+                time_range: None,
+            },
+            SearchQuery {
+                text: "offset".to_string(),
+                search_type: SearchType::Web,
+                limit: None,
+                offset: Some(10),
+                safe_search: None,
+                country: None,
+                language: None,
+                time_range: None,
+            },
+            SearchQuery {
+                text: "language".to_string(),
+                search_type: SearchType::News,
+                limit: None,
+                offset: None,
+                safe_search: None,
+                country: None,
+                language: Some("en".to_string()),
+                time_range: None,
+            },
+        ];
+
+        for query in unsupported_queries {
+            let error = provider.search(&query).await.unwrap_err();
+            assert!(matches!(error, SearchError::InvalidQuery(_)));
         }
     }
 }
