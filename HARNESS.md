@@ -16,6 +16,7 @@ A living map of the mechanical checks, policies, workflows, and artifacts that m
   1. `cargo fmt --check`
   2. `cargo clippy -- -D warnings -W clippy::complexity -W clippy::cognitive_complexity`
   3. `cargo test`
+  4. `mdbook build`
 
 There is no Makefile, npm script, or other local entrypoint. `just check` is the canonical umbrella command.
 
