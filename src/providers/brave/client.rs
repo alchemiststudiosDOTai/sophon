@@ -113,6 +113,7 @@ mod tests {
     use crate::domain::types::{SafeSearch, SearchType};
     use crate::transport::http::HttpClient;
     use async_trait::async_trait;
+    use serde::Serialize;
 
     struct MockHttpClient {
         response_json: String,
@@ -135,6 +136,19 @@ mod tests {
             assert!(query.iter().any(|(k, _)| k == "safesearch"));
             serde_json::from_str(&self.response_json)
                 .map_err(|e| SearchError::Decode(e.to_string()))
+        }
+
+        async fn post_json<T, B>(
+            &self,
+            _url: &str,
+            _headers: Vec<(String, String)>,
+            _body: B,
+        ) -> Result<T, SearchError>
+        where
+            T: serde::de::DeserializeOwned + Send,
+            B: Serialize + Send,
+        {
+            panic!("unexpected POST request");
         }
     }
 

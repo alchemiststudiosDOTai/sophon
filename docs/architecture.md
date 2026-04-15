@@ -23,18 +23,19 @@ domain (bottom)
    └── user runs: cargo run -- "query" --search-type news --limit 3
 
 2. src/main.rs
-   └── CliArgs::parse() produces CliArgs { query, search_type, limit, ... }
+   └── CliArgs::parse() produces CliArgs { query, provider, search_type, limit, ... }
+   └── selects BraveProvider or ExaProvider
    └── maps CliArgs → SearchQuery
 
 3. src/app/search_service.rs
    └── SearchService::search(SearchQuery) awaits
    └── delegates to dyn SearchProvider
 
-4. src/providers/brave/client.rs
-   └── BraveProvider::search(&SearchQuery)
-   └── picks endpoint: news/search
-   └── builds headers + query params
-   └── calls HttpClient::get_json()
+4. src/providers/*/client.rs
+   └── provider-specific SearchProvider::search(&SearchQuery)
+   └── Brave builds GET endpoint + query params
+   └── Exa builds POST /search JSON body
+   └── calls HttpClient::get_json() or HttpClient::post_json()
 
 5. src/transport/http.rs
    └── ReqwestHttpClient executes HTTP GET
@@ -60,9 +61,9 @@ Every public function that crosses a module boundary uses a domain type.
 |----------|----------|------------|-------------|
 | CLI → App | `SearchService::search` | `SearchQuery` | `Result<SearchResponse, SearchError>` |
 | App → Provider | `SearchProvider::search` | `&SearchQuery` | `Result<SearchResponse, SearchError>` |
-| Provider → Transport | `HttpClient::get_json` | `url, headers, params` | `Result<T, SearchError>` |
-| Transport → Provider | (JSON response body) | bytes | `BraveWebResponse` / `BraveNewsResponse` / `BraveImagesResponse` / `BraveVideosResponse` |
-| Provider → Domain | `map_*_response` | `Brave*Response` | `SearchResponse` |
+| Provider → Transport | `HttpClient::{get_json, post_json}` | `url, headers, params/body` | `Result<T, SearchError>` |
+| Transport → Provider | (JSON response body) | bytes | provider DTOs such as `Brave*Response` or `ExaSearchResponse` |
+| Provider → Domain | `map_*_response` | provider DTOs | `SearchResponse` |
 | App → CLI | `render_text` | `&SearchResponse` | `String` |
 
 ## Domain type reference
@@ -148,11 +149,24 @@ This keeps error handling simple: there is only one error type in the public API
 | `Images` | `images/search` | `BraveImagesResponse` | `map_images_response` |
 | `Videos` | `videos/search` | `BraveVideosResponse` | `map_videos_response` |
 
-Adding a new provider means:
-1. Create a new module under `src/providers/`
-2. Implement `SearchProvider` for your adapter
-3. Map the provider's response DTOs into `SearchResponse`
-4. No changes to `domain`, `app`, or `cli` are required.
+`ExaProvider` reuses the same domain and app contracts but has a different transport shape:
+
+| `SearchType` | Exa request | DTO | Mapper |
+|--------------|-------------|-----|--------|
+| `Web` | `POST /search` without `category` | `ExaSearchResponse` | `map_web_response` |
+| `News` | `POST /search` with `category = "news"` | `ExaSearchResponse` | `map_news_response` |
+| `Images` | rejected with `SearchError::InvalidQuery` | n/a | n/a |
+| `Videos` | rejected with `SearchError::InvalidQuery` | n/a | n/a |
+
+Unsupported Exa inputs are rejected at runtime instead of being ignored: `Images`, `Videos`, `offset`, and `language`.
+
+## Runtime provider selection
+
+`main.rs` remains the only place that chooses a concrete provider. `SearchQuery`, `SearchResponse`, `SearchProvider`, and `SearchService` stay unchanged.
+
+- `--provider brave` loads `BraveConfig` and constructs `BraveProvider`
+- `--provider exa` loads `ExaConfig` and constructs `ExaProvider`
+- omitting `--provider` still selects Brave
 
 ## Architecture enforcement
 
