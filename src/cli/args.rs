@@ -1,7 +1,7 @@
 use crate::domain::types::SearchType;
 use clap::{Parser, ValueEnum};
 
-#[derive(Debug, Clone, ValueEnum)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
 pub enum CliSearchType {
     Web,
     News,
@@ -20,7 +20,7 @@ impl From<CliSearchType> for SearchType {
     }
 }
 
-#[derive(Debug, Clone, ValueEnum)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
 pub enum CliSafeSearch {
     Off,
     Moderate,
@@ -37,6 +37,12 @@ impl From<CliSafeSearch> for crate::domain::types::SafeSearch {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
+pub enum CliProvider {
+    Brave,
+    Exa,
+}
+
 #[derive(Parser, Debug)]
 #[command(name = "sophon-cli")]
 #[command(about = "Provider-agnostic search CLI")]
@@ -49,6 +55,9 @@ pub struct CliArgs {
 
     #[arg(short, long, value_enum, default_value = "web")]
     pub search_type: CliSearchType,
+
+    #[arg(short = 'p', long, value_enum, default_value = "brave")]
+    pub provider: CliProvider,
 
     #[arg(short, long)]
     pub limit: Option<usize>,
@@ -64,4 +73,20 @@ pub struct CliArgs {
 
     #[arg(long)]
     pub language: Option<String>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{CliArgs, CliProvider, CliSearchType};
+    use clap::Parser;
+
+    #[test]
+    fn test_cli_provider_parses_exa_and_defaults_to_brave() {
+        let exa_args = CliArgs::parse_from(["sophon-cli", "--provider", "exa", "rust"]);
+        assert_eq!(exa_args.provider, CliProvider::Exa);
+        assert_eq!(exa_args.search_type, CliSearchType::Web);
+
+        let default_args = CliArgs::parse_from(["sophon-cli", "rust"]);
+        assert_eq!(default_args.provider, CliProvider::Brave);
+    }
 }

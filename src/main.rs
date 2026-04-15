@@ -6,11 +6,13 @@ mod transport;
 
 use app::search_service::SearchService;
 use clap::Parser;
-use cli::args::CliArgs;
+use cli::args::{CliArgs, CliProvider};
 use cli::output::render_text;
 use domain::query::SearchQuery;
 use providers::brave::client::BraveProvider;
 use providers::brave::config::BraveConfig;
+use providers::exa::client::ExaProvider;
+use providers::exa::config::ExaConfig;
 use transport::http::ReqwestHttpClient;
 
 #[tokio::main]
@@ -39,18 +41,6 @@ async fn main() {
         }
     };
 
-    let config = match BraveConfig::from_env() {
-        Ok(c) => c,
-        Err(e) => {
-            eprintln!("Failed to load Brave config: {}", e);
-            std::process::exit(1);
-        }
-    };
-
-    let client = ReqwestHttpClient::new();
-    let provider = BraveProvider::new(client, config);
-    let service = SearchService::new(Box::new(provider));
-
     let query = SearchQuery {
         text: query_text,
         search_type: args.search_type.into(),
@@ -60,6 +50,31 @@ async fn main() {
         country: args.country,
         language: args.language,
         time_range: None,
+    };
+
+    let service = match args.provider {
+        CliProvider::Brave => {
+            let config = match BraveConfig::from_env() {
+                Ok(config) => config,
+                Err(error) => {
+                    eprintln!("Failed to load Brave config: {}", error);
+                    std::process::exit(1);
+                }
+            };
+            let provider = BraveProvider::new(ReqwestHttpClient::new(), config);
+            SearchService::new(Box::new(provider))
+        }
+        CliProvider::Exa => {
+            let config = match ExaConfig::from_env() {
+                Ok(config) => config,
+                Err(error) => {
+                    eprintln!("Failed to load Exa config: {}", error);
+                    std::process::exit(1);
+                }
+            };
+            let provider = ExaProvider::new(ReqwestHttpClient::new(), config);
+            SearchService::new(Box::new(provider))
+        }
     };
 
     match service.search(query).await {
