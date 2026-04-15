@@ -18,8 +18,6 @@
 - `src/cli/` — `clap` argument parsing (`args.rs`) and text renderer (`output.rs`)
 - `tests/architecture_test.rs` — source-scan tests enforcing layer boundaries
 - `docs/` — mdBook source: intro, architecture, quickstart
-- `.artifacts/plan/2026-04-14_search-cli/tickets/` — per-task plan tickets (T001–T012)
-- `.artifacts/execute/2026-04-14_search-cli.md` — execution log with commit history
 
 ## Commands
 - `just check` — run formatter check, clippy (with complexity/cognitive lints), tests, and mdBook docs build
@@ -34,9 +32,7 @@
 - **CLI** (`src/cli/`) — arg parsing and output rendering only
 
 ## Sources Of Truth
-- `PRD.md` — product requirements and core design rules
 - `HARNESS.md` — current harness map and validation chain
-- `.artifacts/plan/2026-04-14_search-cli/PLAN.md` — execution plan
 - `justfile` — canonical local check gate
 - `Cargo.toml` — dependencies and edition 2024
 
@@ -44,9 +40,7 @@
 - Run `just check` before committing.
 - Keep domain types provider-agnostic; add provider-specific logic in `src/providers/`.
 - Architecture boundary tests enforce import direction; if you add a cross-layer `use`, update boundaries intentionally and adjust `tests/architecture_test.rs` if needed.
-- Do not commit the `.env` file (it is listed in `.gitignore`).
 
 ## Validation Checklist
 - [ ] `just check` passes (fmt, clippy, tests, docs build)
 - [ ] Every path listed above still exists
-- [ ] `AGENTS.md` remains under ~100 lines
