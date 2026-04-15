@@ -29,7 +29,7 @@ async fn main() {
         println!("across vast distances. This tiny CLI delegates its heavy lifting to");
         println!("distant search APIs the same way.");
         println!();
-        println!("Currently supports Brave Search (web, news, images, video).");
+        println!("Currently supports Brave Search (web, news, images, video) and Exa.");
         return;
     }
 
