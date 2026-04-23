@@ -22,6 +22,9 @@ pub fn render_text(response: &SearchResponse) -> String {
                 if let Some(s) = &r.source {
                     lines.push(format!("   Source: {}", s));
                 }
+                if let Some(s) = &r.snippet {
+                    lines.push(format!("   {}", s));
+                }
             }
             SearchResult::Image(r) => {
                 lines.push(format!("{}. [IMAGE] {}", i + 1, r.title));
@@ -57,7 +60,7 @@ mod tests {
                 SearchResult::News(NewsResult {
                     title: "Rust News".to_string(),
                     url: "https://example.com/news".to_string(),
-                    snippet: None,
+                    snippet: Some("Breaking update".to_string()),
                     source: Some("Example".to_string()),
                     published_at: None,
                 }),
@@ -84,6 +87,7 @@ mod tests {
         assert!(text.contains("Rust Lang"));
         assert!(text.contains("https://rust-lang.org"));
         assert!(text.contains("[NEWS] Rust News"));
+        assert!(text.contains("Breaking update"));
         assert!(text.contains("[IMAGE] Rust Logo"));
         assert!(text.contains("[VIDEO] Rust Tutorial"));
     }
