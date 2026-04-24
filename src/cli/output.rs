@@ -13,7 +13,10 @@ pub fn render_text(response: &SearchResponse) -> String {
                 lines.push(format!("{}. [{}]", i + 1, r.title));
                 lines.push(format!("   URL: {}", r.url));
                 if let Some(s) = &r.snippet {
-                    lines.push(format!("   {}", s));
+                    let t = s.trim();
+                    if !t.is_empty() {
+                        lines.push(format!("   {}", t));
+                    }
                 }
             }
             SearchResult::News(r) => {
@@ -23,7 +26,10 @@ pub fn render_text(response: &SearchResponse) -> String {
                     lines.push(format!("   Source: {}", s));
                 }
                 if let Some(s) = &r.snippet {
-                    lines.push(format!("   {}", s));
+                    let t = s.trim();
+                    if !t.is_empty() {
+                        lines.push(format!("   {}", t));
+                    }
                 }
             }
             SearchResult::Image(r) => {
