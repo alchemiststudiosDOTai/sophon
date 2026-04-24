@@ -4,11 +4,17 @@ use crate::domain::query::SearchQuery;
 use crate::domain::result::SearchResponse;
 use crate::domain::types::{SafeSearch, SearchType, TimeRange};
 use crate::providers::exa::config::ExaConfig;
-use crate::providers::exa::dto::{ExaContentsRequest, ExaSearchRequest, ExaSearchResponse};
+use crate::providers::exa::dto::{
+    ExaContentsRequest, ExaHighlightsRequest, ExaSearchRequest, ExaSearchResponse,
+    ExaSummaryRequest,
+};
 use crate::providers::exa::mapper::{map_news_response, map_web_response};
 use crate::transport::http::HttpClient;
 use async_trait::async_trait;
 use chrono::{Duration, Utc};
+
+/// Budget for Exa per-result highlights (API); mapper applies a shorter CLI-facing cap.
+const EXA_HIGHLIGHTS_MAX_CHARACTERS: u32 = 1200;
 
 pub struct ExaProvider<C: HttpClient> {
     client: C,
@@ -67,7 +73,16 @@ impl<C: HttpClient> ExaProvider<C> {
                 Some(SafeSearch::Moderate | SafeSearch::Strict) => Some(true),
                 None => None,
             },
-            contents: ExaContentsRequest { text: true },
+            contents: ExaContentsRequest {
+                text: None,
+                highlights: Some(ExaHighlightsRequest {
+                    max_characters: EXA_HIGHLIGHTS_MAX_CHARACTERS,
+                    query: Some(query.text.clone()),
+                }),
+                summary: Some(ExaSummaryRequest {
+                    query: query.text.clone(),
+                }),
+            },
         })
     }
 }
@@ -181,10 +196,28 @@ mod tests {
             assert_eq!(body.get("numResults"), Some(&Value::from(3)));
             assert_eq!(body.get("moderation"), Some(&Value::Bool(true)));
             assert_eq!(body.get("type"), Some(&Value::String("auto".to_string())));
+            let contents = body.get("contents").unwrap();
+            assert!(contents.get("text").is_none());
             assert_eq!(
-                body.get("contents")
-                    .and_then(|contents| contents.get("text")),
-                Some(&Value::Bool(true))
+                contents
+                    .get("highlights")
+                    .and_then(|h| h.get("maxCharacters"))
+                    .and_then(Value::as_u64),
+                Some(u64::from(super::EXA_HIGHLIGHTS_MAX_CHARACTERS))
+            );
+            assert_eq!(
+                contents
+                    .get("highlights")
+                    .and_then(|h| h.get("query"))
+                    .and_then(Value::as_str),
+                Some("ai news")
+            );
+            assert_eq!(
+                contents
+                    .get("summary")
+                    .and_then(|s| s.get("query"))
+                    .and_then(Value::as_str),
+                Some("ai news")
             );
 
             let start = body
