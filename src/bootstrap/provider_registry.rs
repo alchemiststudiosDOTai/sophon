@@ -88,13 +88,12 @@ impl ProviderRegistry {
     }
 
     pub fn build(&self, provider: ProviderId) -> Result<SearchService, BuildSearchServiceError> {
-        let builder =
-            self.builders
-                .get(&provider)
-                .ok_or_else(|| BuildSearchServiceError::ProviderUnavailable {
-                    provider,
-                    available: self.available_providers(),
-                })?;
+        let builder = self.builders.get(&provider).ok_or_else(|| {
+            BuildSearchServiceError::ProviderUnavailable {
+                provider,
+                available: self.available_providers(),
+            }
+        })?;
 
         Ok(SearchService::new(builder()))
     }

@@ -2,7 +2,7 @@
 
 ## Design principle
 
-The codebase is split into four strictly ordered layers. **No layer may import from a layer above it.** This prevents the CLI from leaking into the domain and keeps providers interchangeable.
+The codebase is split into four strictly ordered runtime layers plus a narrow bootstrap composition layer. **No runtime layer may import from a layer above it.** This prevents the CLI from leaking into the domain and keeps providers interchangeable.
 
 ```
 cli (top)
@@ -14,6 +14,8 @@ providers
 transport
   ↑
 domain (bottom)
+
+bootstrap composes app + providers + transport at startup
 ```
 
 ## Full request lifecycle
@@ -24,7 +26,8 @@ domain (bottom)
 
 2. src/main.rs
    └── CliArgs::parse() produces CliArgs { query, provider, search_type, limit, ... }
-   └── selects BraveProvider or ExaProvider
+   └── converts CliProvider to ProviderId
+   └── asks the bootstrap ProviderRegistry to build SearchService
    └── maps CliArgs → SearchQuery
 
 3. src/app/search_service.rs
@@ -162,10 +165,10 @@ Unsupported Exa inputs are rejected at runtime instead of being ignored: `Images
 
 ## Runtime provider selection
 
-`main.rs` remains the only place that chooses a concrete provider. `SearchQuery`, `SearchResponse`, `SearchProvider`, and `SearchService` stay unchanged.
+`main.rs` remains the binary edge that chooses the requested provider ID. Concrete provider construction lives in `src/bootstrap/provider_registry.rs`, where typed provider config, HTTP transport, provider clients, and `SearchService` are composed.
 
-- `--provider brave` loads `BraveConfig` and constructs `BraveProvider`
-- `--provider exa` loads `ExaConfig` and constructs `ExaProvider`
+- `--provider brave` maps to `ProviderId::Brave`; the registry includes it only when `BRAVE_API_KEY` is configured
+- `--provider exa` maps to `ProviderId::Exa`; the registry includes it only when `EXA_API_KEY` is configured
 - omitting `--provider` still selects Brave
 
 ## Architecture enforcement
@@ -178,6 +181,7 @@ The rules are verified by `tests/architecture_test.rs`. These tests scan source 
 | `src/transport/` | `crate::providers::`, `crate::cli::`, `crate::app::` |
 | `src/providers/` | `crate::cli::`, `crate::app::` |
 | `src/app/` | `crate::cli::` |
+| `src/bootstrap/` | `crate::cli::` |
 | Any layer except `src/cli/` | `render_text` |
 
 Run them with the rest of the suite:
