@@ -6,6 +6,7 @@ mod providers;
 mod transport;
 
 use app::search_service::SearchService;
+use bootstrap::provider_registry::ProviderId;
 use clap::Parser;
 use cli::args::{CliArgs, CliProvider};
 use cli::output::render_text;
@@ -15,6 +16,15 @@ use providers::brave::config::BraveConfig;
 use providers::exa::client::ExaProvider;
 use providers::exa::config::ExaConfig;
 use transport::http::ReqwestHttpClient;
+
+impl From<CliProvider> for ProviderId {
+    fn from(provider: CliProvider) -> Self {
+        match provider {
+            CliProvider::Brave => ProviderId::Brave,
+            CliProvider::Exa => ProviderId::Exa,
+        }
+    }
+}
 
 #[tokio::main]
 async fn main() {
