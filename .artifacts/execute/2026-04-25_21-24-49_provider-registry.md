@@ -42,19 +42,19 @@ env: {target: "local", notes: "Rust CLI local implementation"}
 
 ### T003 - Add production registry that only includes configured providers
 - Status: completed
-- Commit: pending
+- Commit: d942b93
 - Files: src/bootstrap/provider_registry.rs
 - Commands: `cargo test bootstrap::provider_registry` -> pass
 - Tests: env-backed production availability test pass
 - Notes: Registered Brave and Exa only when typed env config constructors succeed; missing or non-Unicode keys omit providers.
 
 ### T004 - Convert CliProvider to ProviderId at the binary edge
-- Status: pending
+- Status: completed
 - Commit: pending
-- Files: pending
-- Commands: pending
-- Tests: pending
-- Notes: pending
+- Files: src/main.rs
+- Commands: `cargo test cli::args::tests::test_cli_provider_parses_exa_and_defaults_to_brave` -> pass
+- Tests: CLI provider parsing regression test pass
+- Notes: Conversion lives in the binary edge; bootstrap remains CLI-independent.
 
 ### T005 - Replace inline provider construction in main
 - Status: pending
