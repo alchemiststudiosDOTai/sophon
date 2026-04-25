@@ -26,19 +26,19 @@ env: {target: "local", notes: "Rust CLI local implementation"}
 
 ### T001 - Add bootstrap module skeleton and ProviderId
 - Status: completed
-- Commit: pending
+- Commit: 9e0087d
 - Files: src/main.rs; src/bootstrap/mod.rs; src/bootstrap/provider_registry.rs
 - Commands: `cargo check` -> pass with expected temporary dead-code warning for ProviderId
 - Tests: cargo check pass
 - Notes: Added composition module skeleton only; production provider behavior unchanged.
 
 ### T002 - Define registry and construction error contract
-- Status: pending
+- Status: completed
 - Commit: pending
-- Files: pending
-- Commands: pending
-- Tests: pending
-- Notes: pending
+- Files: src/bootstrap/provider_registry.rs
+- Commands: `cargo test bootstrap::provider_registry::tests::empty_registry_reports_provider_unavailable` -> pass
+- Tests: focused unavailable-provider unit test pass
+- Notes: Added registry builder map, stable availability ordering, and ProviderUnavailable construction error.
 
 ### T003 - Add production registry that only includes configured providers
 - Status: pending
