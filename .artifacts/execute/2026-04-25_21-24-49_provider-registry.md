@@ -50,19 +50,19 @@ env: {target: "local", notes: "Rust CLI local implementation"}
 
 ### T004 - Convert CliProvider to ProviderId at the binary edge
 - Status: completed
-- Commit: pending
+- Commit: e441cb9
 - Files: src/main.rs
 - Commands: `cargo test cli::args::tests::test_cli_provider_parses_exa_and_defaults_to_brave` -> pass
 - Tests: CLI provider parsing regression test pass
 - Notes: Conversion lives in the binary edge; bootstrap remains CLI-independent.
 
 ### T005 - Replace inline provider construction in main
-- Status: pending
+- Status: completed
 - Commit: pending
-- Files: pending
-- Commands: pending
-- Tests: pending
-- Notes: pending
+- Files: src/main.rs
+- Commands: `cargo check` -> pass; `env -u BRAVE_API_KEY -u EXA_API_KEY cargo run -- "rust"` -> exits 1 with `provider `brave` is unavailable; configured providers: []`
+- Tests: missing-key CLI acceptance proof pass
+- Notes: Main now builds the selected service through the production registry before search execution.
 
 ### T006 - Extend architecture guardrails for the composition layer
 - Status: pending

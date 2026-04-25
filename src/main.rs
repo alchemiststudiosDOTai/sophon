@@ -5,17 +5,11 @@ mod domain;
 mod providers;
 mod transport;
 
-use app::search_service::SearchService;
-use bootstrap::provider_registry::ProviderId;
+use bootstrap::provider_registry::{ProviderId, ProviderRegistry};
 use clap::Parser;
 use cli::args::{CliArgs, CliProvider};
 use cli::output::render_text;
 use domain::query::SearchQuery;
-use providers::brave::client::BraveProvider;
-use providers::brave::config::BraveConfig;
-use providers::exa::client::ExaProvider;
-use providers::exa::config::ExaConfig;
-use transport::http::ReqwestHttpClient;
 
 impl From<CliProvider> for ProviderId {
     fn from(provider: CliProvider) -> Self {
@@ -63,30 +57,12 @@ async fn main() {
         time_range: None,
     };
 
-    let service = match args.provider {
-        CliProvider::Brave => {
-            let config = match BraveConfig::from_env() {
-                Ok(config) => config,
-                Err(error) => {
-                    eprintln!("Failed to load Brave config: {}", error);
-                    std::process::exit(1);
-                }
-            };
-            let provider = BraveProvider::new(ReqwestHttpClient::new(), config);
-            SearchService::new(Box::new(provider))
-        }
-        CliProvider::Exa => {
-            let config = match ExaConfig::from_env() {
-                Ok(config) => config,
-                Err(error) => {
-                    eprintln!("Failed to load Exa config: {}", error);
-                    std::process::exit(1);
-                }
-            };
-            let provider = ExaProvider::new(ReqwestHttpClient::new(), config);
-            SearchService::new(Box::new(provider))
-        }
-    };
+    let provider_id = ProviderId::from(args.provider);
+    let registry = ProviderRegistry::production_from_env();
+    let service = registry.build(provider_id).unwrap_or_else(|error| {
+        eprintln!("{error}");
+        std::process::exit(1);
+    });
 
     match service.search(query).await {
         Ok(response) => {
