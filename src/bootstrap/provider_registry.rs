@@ -103,8 +103,44 @@ impl ProviderRegistry {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::domain::error::SearchError;
+    use crate::domain::provider::ProviderCapabilities;
+    use crate::domain::query::SearchQuery;
+    use crate::domain::result::SearchResponse;
+    use async_trait::async_trait;
     use std::ffi::OsString;
     use std::sync::{Mutex, OnceLock};
+
+    struct MockProvider;
+
+    #[async_trait]
+    impl SearchProvider for MockProvider {
+        fn id(&self) -> String {
+            "mock".to_string()
+        }
+
+        fn capabilities(&self) -> ProviderCapabilities {
+            ProviderCapabilities {
+                web: true,
+                news: true,
+                images: false,
+                videos: false,
+                pagination: false,
+                safe_search: false,
+                time_range_filter: false,
+            }
+        }
+
+        async fn search(&self, _query: &SearchQuery) -> Result<SearchResponse, SearchError> {
+            Ok(SearchResponse {
+                query: "mock".to_string(),
+                provider: "mock".to_string(),
+                results: vec![],
+                total_estimated: None,
+                next_page: None,
+            })
+        }
+    }
 
     fn env_lock() -> &'static Mutex<()> {
         static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
@@ -155,5 +191,26 @@ mod tests {
         restore_env_var("EXA_API_KEY", original_exa);
 
         assert_eq!(registry.available_providers(), vec![ProviderId::Brave]);
+    }
+
+    #[test]
+    fn registered_provider_is_available_and_builds_service() {
+        let mut registry = ProviderRegistry::empty();
+        registry.register(ProviderId::Brave, Box::new(|| Box::new(MockProvider)));
+
+        assert_eq!(registry.available_providers(), vec![ProviderId::Brave]);
+        assert!(registry.build(ProviderId::Brave).is_ok());
+    }
+
+    #[test]
+    fn available_providers_are_returned_in_stable_order() {
+        let mut registry = ProviderRegistry::empty();
+        registry.register(ProviderId::Exa, Box::new(|| Box::new(MockProvider)));
+        registry.register(ProviderId::Brave, Box::new(|| Box::new(MockProvider)));
+
+        assert_eq!(
+            registry.available_providers(),
+            vec![ProviderId::Brave, ProviderId::Exa]
+        );
     }
 }

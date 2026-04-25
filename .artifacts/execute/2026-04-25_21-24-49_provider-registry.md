@@ -66,19 +66,19 @@ env: {target: "local", notes: "Rust CLI local implementation"}
 
 ### T006 - Extend architecture guardrails for the composition layer
 - Status: completed
-- Commit: pending
+- Commit: 0b6eeac
 - Files: tests/architecture_test.rs
 - Commands: `cargo test --test architecture_test` -> pass
 - Tests: architecture boundary tests pass, including bootstrap no-CLI guard
 - Notes: Existing layer checks unchanged; bootstrap remains allowed to compose app, providers, transport, and domain.
 
 ### T007 - Add focused registry tests
-- Status: pending
+- Status: completed
 - Commit: pending
-- Files: pending
-- Commands: pending
-- Tests: pending
-- Notes: pending
+- Files: src/bootstrap/provider_registry.rs
+- Commands: `cargo test bootstrap::provider_registry` -> pass
+- Tests: registry unavailable, env availability, successful build, and stable ordering tests pass
+- Notes: Pure registry tests use a local MockProvider and remain separate from env mutation test.
 
 ### T008 - Run final local gate and update docs only if source references require it
 - Status: pending
