@@ -58,19 +58,19 @@ env: {target: "local", notes: "Rust CLI local implementation"}
 
 ### T005 - Replace inline provider construction in main
 - Status: completed
-- Commit: pending
+- Commit: 5129cf5
 - Files: src/main.rs
 - Commands: `cargo check` -> pass; `env -u BRAVE_API_KEY -u EXA_API_KEY cargo run -- "rust"` -> exits 1 with `provider `brave` is unavailable; configured providers: []`
 - Tests: missing-key CLI acceptance proof pass
 - Notes: Main now builds the selected service through the production registry before search execution.
 
 ### T006 - Extend architecture guardrails for the composition layer
-- Status: pending
+- Status: completed
 - Commit: pending
-- Files: pending
-- Commands: pending
-- Tests: pending
-- Notes: pending
+- Files: tests/architecture_test.rs
+- Commands: `cargo test --test architecture_test` -> pass
+- Tests: architecture boundary tests pass, including bootstrap no-CLI guard
+- Notes: Existing layer checks unchanged; bootstrap remains allowed to compose app, providers, transport, and domain.
 
 ### T007 - Add focused registry tests
 - Status: pending
