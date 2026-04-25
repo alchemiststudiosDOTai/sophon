@@ -5,7 +5,6 @@
 - Provider-agnostic domain layer with a Brave-specific adapter behind a trait boundary.
 
 ## Where To Start
-- Design rules and boundaries: `PRD.md`
 - Implementation plan: `.artifacts/plan/2026-04-14_search-cli/PLAN.md`
 - Harness map (checks, tests, gaps): `HARNESS.md`
 
