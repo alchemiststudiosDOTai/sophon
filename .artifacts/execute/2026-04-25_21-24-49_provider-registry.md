@@ -34,19 +34,19 @@ env: {target: "local", notes: "Rust CLI local implementation"}
 
 ### T002 - Define registry and construction error contract
 - Status: completed
-- Commit: pending
+- Commit: 8886c96
 - Files: src/bootstrap/provider_registry.rs
 - Commands: `cargo test bootstrap::provider_registry::tests::empty_registry_reports_provider_unavailable` -> pass
 - Tests: focused unavailable-provider unit test pass
 - Notes: Added registry builder map, stable availability ordering, and ProviderUnavailable construction error.
 
 ### T003 - Add production registry that only includes configured providers
-- Status: pending
+- Status: completed
 - Commit: pending
-- Files: pending
-- Commands: pending
-- Tests: pending
-- Notes: pending
+- Files: src/bootstrap/provider_registry.rs
+- Commands: `cargo test bootstrap::provider_registry` -> pass
+- Tests: env-backed production availability test pass
+- Notes: Registered Brave and Exa only when typed env config constructors succeed; missing or non-Unicode keys omit providers.
 
 ### T004 - Convert CliProvider to ProviderId at the binary edge
 - Status: pending

@@ -3,6 +3,11 @@ use std::fmt;
 
 use crate::app::search_service::SearchService;
 use crate::domain::provider::SearchProvider;
+use crate::providers::brave::client::BraveProvider;
+use crate::providers::brave::config::BraveConfig;
+use crate::providers::exa::client::ExaProvider;
+use crate::providers::exa::config::ExaConfig;
+use crate::transport::http::ReqwestHttpClient;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ProviderId {
@@ -41,6 +46,36 @@ impl ProviderRegistry {
         }
     }
 
+    pub fn production_from_env() -> Self {
+        let mut registry = Self::empty();
+
+        match BraveConfig::from_env() {
+            Ok(config) => {
+                registry.register(
+                    ProviderId::Brave,
+                    Box::new(move || {
+                        Box::new(BraveProvider::new(ReqwestHttpClient::new(), config.clone()))
+                    }),
+                );
+            }
+            Err(std::env::VarError::NotPresent | std::env::VarError::NotUnicode(_)) => {}
+        }
+
+        match ExaConfig::from_env() {
+            Ok(config) => {
+                registry.register(
+                    ProviderId::Exa,
+                    Box::new(move || {
+                        Box::new(ExaProvider::new(ReqwestHttpClient::new(), config.clone()))
+                    }),
+                );
+            }
+            Err(std::env::VarError::NotPresent | std::env::VarError::NotUnicode(_)) => {}
+        }
+
+        registry
+    }
+
     pub fn register(&mut self, id: ProviderId, builder: ProviderBuilder) {
         self.builders.insert(id, builder);
     }
@@ -68,6 +103,24 @@ impl ProviderRegistry {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::ffi::OsString;
+    use std::sync::{Mutex, OnceLock};
+
+    fn env_lock() -> &'static Mutex<()> {
+        static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+        LOCK.get_or_init(|| Mutex::new(()))
+    }
+
+    fn restore_env_var(name: &str, value: Option<OsString>) {
+        match value {
+            Some(value) => unsafe {
+                std::env::set_var(name, value);
+            },
+            None => unsafe {
+                std::env::remove_var(name);
+            },
+        }
+    }
 
     #[test]
     fn empty_registry_reports_provider_unavailable() {
@@ -83,5 +136,24 @@ mod tests {
             }
             Ok(_) => panic!("expected ProviderUnavailable error"),
         }
+    }
+
+    #[test]
+    fn production_registry_only_includes_configured_providers() {
+        let _guard = env_lock().lock().unwrap();
+        let original_brave = std::env::var_os("BRAVE_API_KEY");
+        let original_exa = std::env::var_os("EXA_API_KEY");
+
+        unsafe {
+            std::env::set_var("BRAVE_API_KEY", "test-brave-key");
+            std::env::remove_var("EXA_API_KEY");
+        }
+
+        let registry = ProviderRegistry::production_from_env();
+
+        restore_env_var("BRAVE_API_KEY", original_brave);
+        restore_env_var("EXA_API_KEY", original_exa);
+
+        assert_eq!(registry.available_providers(), vec![ProviderId::Brave]);
     }
 }
