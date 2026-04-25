@@ -1,4 +1,5 @@
 mod app;
+mod bootstrap;
 mod cli;
 mod domain;
 mod providers;
