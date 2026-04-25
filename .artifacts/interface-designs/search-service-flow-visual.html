@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Search Service Wiring Visual</title>
+    <style>
+      body {
+        margin: 0;
+        background: #020617;
+        color: #e5edf4;
+        font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+      }
+      main {
+        max-width: 1460px;
+        margin: 0 auto;
+        padding: 28px 18px 42px;
+      }
+      h1 {
+        margin: 0;
+        font-size: 30px;
+        letter-spacing: 0;
+      }
+      p {
+        color: #9fb0c3;
+        margin: 8px 0 20px;
+        max-width: 960px;
+        line-height: 1.55;
+      }
+      .frame {
+        border: 1px solid #1e293b;
+        border-radius: 12px;
+        overflow: auto;
+        background: #020617;
+        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+      }
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 14px;
+        margin-top: 16px;
+      }
+      .card {
+        border: 1px solid #1e293b;
+        border-radius: 10px;
+        background: #0f172a;
+        padding: 14px;
+      }
+      .card h2 {
+        margin: 0 0 8px;
+        font-size: 15px;
+        letter-spacing: 0;
+      }
+      .card p {
+        margin: 0;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>SearchService Wiring: What Actually Changes</h1>
+      <p>
+        This diagram is about the construction path around <strong>provider selection</strong>.
+        No search request is sent until <strong>service.search(query).await</strong>. The design question is:
+        how much wiring should <strong>main</strong> see?
+      </p>
+
+      <div class="frame">
+        <svg width="1420" height="1040" viewBox="0 0 1420 1040" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Search service interface design options">
+          <defs>
+            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+            </pattern>
+            <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L0,6 L9,3 z" fill="#94a3b8"/>
+            </marker>
+            <marker id="arrowGreen" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L0,6 L9,3 z" fill="#34d399"/>
+            </marker>
+            <marker id="arrowRose" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L0,6 L9,3 z" fill="#fb7185"/>
+            </marker>
+            <style>
+              .title { fill: #f8fafc; font-size: 18px; font-weight: 700; }
+              .label { fill: #e2e8f0; font-size: 13px; font-weight: 700; }
+              .sub { fill: #94a3b8; font-size: 10px; }
+              .tiny { fill: #cbd5e1; font-size: 9px; }
+              .note { fill: #f8fafc; font-size: 11px; font-weight: 700; }
+            </style>
+          </defs>
+
+          <rect width="1420" height="1040" fill="#020617"/>
+          <rect width="1420" height="1040" fill="url(#grid)" opacity="0.8"/>
+
+          <!-- Section boundaries -->
+          <rect x="28" y="34" width="1364" height="270" rx="14" fill="rgba(136,19,55,.12)" stroke="#fb7185" stroke-width="1.5" stroke-dasharray="8 5"/>
+          <rect x="28" y="336" width="432" height="648" rx="14" fill="rgba(6,78,59,.16)" stroke="#34d399" stroke-width="1.5"/>
+          <rect x="494" y="336" width="432" height="648" rx="14" fill="rgba(76,29,149,.16)" stroke="#a78bfa" stroke-width="1.5"/>
+          <rect x="960" y="336" width="432" height="648" rx="14" fill="rgba(120,53,15,.14)" stroke="#fbbf24" stroke-width="1.5"/>
+
+          <text x="52" y="68" class="title">Current: main is the wiring diagram</text>
+          <text x="52" y="92" class="sub">The branch does config loading, process exit, HTTP client creation, provider construction, boxing, and service construction.</text>
+
+          <text x="52" y="370" class="title">Option 1: Narrow Factory</text>
+          <text x="518" y="370" class="title">Option 2: Registry Factory</text>
+          <text x="984" y="370" class="title">Option 3: CLI App Runner</text>
+
+          <!-- Current flow arrows -->
+          <path d="M178 160 H314" stroke="#fb7185" stroke-width="2.2" fill="none" marker-end="url(#arrowRose)"/>
+          <path d="M430 160 H566" stroke="#fb7185" stroke-width="2.2" fill="none" marker-end="url(#arrowRose)"/>
+          <path d="M682 160 H818" stroke="#fb7185" stroke-width="2.2" fill="none" marker-end="url(#arrowRose)"/>
+          <path d="M934 160 H1070" stroke="#fb7185" stroke-width="2.2" fill="none" marker-end="url(#arrowRose)"/>
+          <path d="M1186 160 H1322" stroke="#fb7185" stroke-width="2.2" fill="none" marker-end="url(#arrowRose)"/>
+
+          <!-- Current boxes -->
+          <rect x="62" y="122" width="116" height="76" rx="7" fill="#0f172a"/>
+          <rect x="62" y="122" width="116" height="76" rx="7" fill="rgba(8,51,68,.45)" stroke="#22d3ee" stroke-width="1.5"/>
+          <text x="120" y="153" text-anchor="middle" class="label">main</text>
+          <text x="120" y="172" text-anchor="middle" class="sub">args.provider</text>
+
+          <rect x="314" y="122" width="116" height="76" rx="7" fill="#0f172a"/>
+          <rect x="314" y="122" width="116" height="76" rx="7" fill="rgba(136,19,55,.4)" stroke="#fb7185" stroke-width="1.5"/>
+          <text x="372" y="148" text-anchor="middle" class="label">match</text>
+          <text x="372" y="167" text-anchor="middle" class="sub">Brave / Exa</text>
+          <text x="372" y="182" text-anchor="middle" class="sub">exit on config error</text>
+
+          <rect x="566" y="122" width="116" height="76" rx="7" fill="#0f172a"/>
+          <rect x="566" y="122" width="116" height="76" rx="7" fill="rgba(120,53,15,.35)" stroke="#fbbf24" stroke-width="1.5"/>
+          <text x="624" y="148" text-anchor="middle" class="label">Config</text>
+          <text x="624" y="167" text-anchor="middle" class="sub">from_env()</text>
+          <text x="624" y="182" text-anchor="middle" class="sub">provider-specific</text>
+
+          <rect x="818" y="122" width="116" height="76" rx="7" fill="#0f172a"/>
+          <rect x="818" y="122" width="116" height="76" rx="7" fill="rgba(30,41,59,.6)" stroke="#94a3b8" stroke-width="1.5"/>
+          <text x="876" y="148" text-anchor="middle" class="label">HTTP</text>
+          <text x="876" y="167" text-anchor="middle" class="sub">Reqwest</text>
+          <text x="876" y="182" text-anchor="middle" class="sub">client wrapper</text>
+
+          <rect x="1070" y="122" width="116" height="76" rx="7" fill="#0f172a"/>
+          <rect x="1070" y="122" width="116" height="76" rx="7" fill="rgba(6,78,59,.4)" stroke="#34d399" stroke-width="1.5"/>
+          <text x="1128" y="148" text-anchor="middle" class="label">Provider</text>
+          <text x="1128" y="167" text-anchor="middle" class="sub">BraveProvider</text>
+          <text x="1128" y="182" text-anchor="middle" class="sub">or ExaProvider</text>
+
+          <rect x="1322" y="122" width="56" height="76" rx="7" fill="#0f172a"/>
+          <rect x="1322" y="122" width="56" height="76" rx="7" fill="rgba(76,29,149,.45)" stroke="#a78bfa" stroke-width="1.5"/>
+          <text x="1350" y="151" text-anchor="middle" class="label">Svc</text>
+          <text x="1350" y="169" text-anchor="middle" class="sub">boxed</text>
+
+          <rect x="252" y="232" width="916" height="42" rx="7" fill="rgba(136,19,55,.24)" stroke="#fb7185"/>
+          <text x="710" y="258" text-anchor="middle" class="note">Smell: the top-level command path must read every provider's construction recipe</text>
+
+          <!-- Option 1 -->
+          <path d="M118 484 H210" stroke="#34d399" stroke-width="2.2" fill="none" marker-end="url(#arrowGreen)"/>
+          <path d="M298 484 H390" stroke="#34d399" stroke-width="2.2" fill="none" marker-end="url(#arrowGreen)"/>
+          <path d="M250 544 V618" stroke="#34d399" stroke-width="2" fill="none" marker-end="url(#arrowGreen)"/>
+
+          <rect x="62" y="438" width="112" height="92" rx="7" fill="#0f172a"/>
+          <rect x="62" y="438" width="112" height="92" rx="7" fill="rgba(8,51,68,.45)" stroke="#22d3ee" stroke-width="1.5"/>
+          <text x="118" y="474" text-anchor="middle" class="label">main</text>
+          <text x="118" y="493" text-anchor="middle" class="sub">parse args</text>
+          <text x="118" y="508" text-anchor="middle" class="sub">handle exit</text>
+
+          <rect x="210" y="426" width="88" height="116" rx="7" fill="#0f172a"/>
+          <rect x="210" y="426" width="88" height="116" rx="7" fill="rgba(6,78,59,.45)" stroke="#34d399" stroke-width="1.5"/>
+          <text x="254" y="459" text-anchor="middle" class="label">build</text>
+          <text x="254" y="477" text-anchor="middle" class="label">service</text>
+          <text x="254" y="500" text-anchor="middle" class="sub">one function</text>
+          <text x="254" y="515" text-anchor="middle" class="sub">owns match</text>
+
+          <rect x="342" y="438" width="82" height="92" rx="7" fill="#0f172a"/>
+          <rect x="342" y="438" width="82" height="92" rx="7" fill="rgba(76,29,149,.45)" stroke="#a78bfa" stroke-width="1.5"/>
+          <text x="383" y="476" text-anchor="middle" class="label">Search</text>
+          <text x="383" y="494" text-anchor="middle" class="label">Service</text>
+
+          <rect x="94" y="618" width="312" height="170" rx="8" fill="#0f172a"/>
+          <rect x="94" y="618" width="312" height="170" rx="8" fill="rgba(15,23,42,.72)" stroke="#334155"/>
+          <text x="250" y="646" text-anchor="middle" class="label">hidden inside factory</text>
+          <text x="128" y="678" class="tiny">• BraveConfig::from_env()</text>
+          <text x="128" y="704" class="tiny">• ExaConfig::from_env()</text>
+          <text x="128" y="730" class="tiny">• ReqwestHttpClient::new()</text>
+          <text x="128" y="756" class="tiny">• Provider constructors + Box</text>
+
+          <rect x="74" y="842" width="352" height="76" rx="8" fill="rgba(6,78,59,.3)" stroke="#34d399"/>
+          <text x="250" y="872" text-anchor="middle" class="note">Best default</text>
+          <text x="250" y="896" text-anchor="middle" class="sub">small interface, no new framework</text>
+
+          <!-- Option 2 -->
+          <path d="M584 484 H676" stroke="#a78bfa" stroke-width="2.2" fill="none" marker-end="url(#arrow)"/>
+          <path d="M764 484 H856" stroke="#a78bfa" stroke-width="2.2" fill="none" marker-end="url(#arrow)"/>
+          <path d="M710 548 V618" stroke="#a78bfa" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+
+          <rect x="528" y="438" width="112" height="92" rx="7" fill="#0f172a"/>
+          <rect x="528" y="438" width="112" height="92" rx="7" fill="rgba(8,51,68,.45)" stroke="#22d3ee" stroke-width="1.5"/>
+          <text x="584" y="474" text-anchor="middle" class="label">main</text>
+          <text x="584" y="493" text-anchor="middle" class="sub">selects name</text>
+          <text x="584" y="508" text-anchor="middle" class="sub">handles exit</text>
+
+          <rect x="676" y="420" width="88" height="128" rx="7" fill="#0f172a"/>
+          <rect x="676" y="420" width="88" height="128" rx="7" fill="rgba(76,29,149,.45)" stroke="#a78bfa" stroke-width="1.5"/>
+          <text x="720" y="454" text-anchor="middle" class="label">Factory</text>
+          <text x="720" y="478" text-anchor="middle" class="sub">registry</text>
+          <text x="720" y="493" text-anchor="middle" class="sub">config source</text>
+          <text x="720" y="508" text-anchor="middle" class="sub">http factory</text>
+
+          <rect x="808" y="438" width="82" height="92" rx="7" fill="#0f172a"/>
+          <rect x="808" y="438" width="82" height="92" rx="7" fill="rgba(76,29,149,.45)" stroke="#a78bfa" stroke-width="1.5"/>
+          <text x="849" y="476" text-anchor="middle" class="label">Search</text>
+          <text x="849" y="494" text-anchor="middle" class="label">Service</text>
+
+          <rect x="558" y="618" width="304" height="170" rx="8" fill="#0f172a"/>
+          <rect x="558" y="618" width="304" height="170" rx="8" fill="rgba(15,23,42,.72)" stroke="#334155"/>
+          <text x="710" y="646" text-anchor="middle" class="label">replaceable parts</text>
+          <text x="592" y="678" class="tiny">• ProviderRegistry</text>
+          <text x="592" y="704" class="tiny">• ProviderConfigSource</text>
+          <text x="592" y="730" class="tiny">• HttpClientFactory</text>
+          <text x="592" y="756" class="tiny">• ProviderSelection::Named(...)</text>
+
+          <rect x="540" y="842" width="352" height="76" rx="8" fill="rgba(76,29,149,.3)" stroke="#a78bfa"/>
+          <text x="716" y="872" text-anchor="middle" class="note">Best when growth is real</text>
+          <text x="716" y="896" text-anchor="middle" class="sub">more extensible, more surface area</text>
+
+          <!-- Option 3 -->
+          <path d="M1050 484 H1142" stroke="#fbbf24" stroke-width="2.2" fill="none" marker-end="url(#arrow)"/>
+          <path d="M1230 484 H1322" stroke="#fbbf24" stroke-width="2.2" fill="none" marker-end="url(#arrow)"/>
+          <path d="M1184 548 V618" stroke="#fbbf24" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+
+          <rect x="994" y="438" width="112" height="92" rx="7" fill="#0f172a"/>
+          <rect x="994" y="438" width="112" height="92" rx="7" fill="rgba(8,51,68,.45)" stroke="#22d3ee" stroke-width="1.5"/>
+          <text x="1050" y="474" text-anchor="middle" class="label">main</text>
+          <text x="1050" y="493" text-anchor="middle" class="sub">build command</text>
+          <text x="1050" y="508" text-anchor="middle" class="sub">render result</text>
+
+          <rect x="1142" y="420" width="88" height="128" rx="7" fill="#0f172a"/>
+          <rect x="1142" y="420" width="88" height="128" rx="7" fill="rgba(120,53,15,.35)" stroke="#fbbf24" stroke-width="1.5"/>
+          <text x="1186" y="454" text-anchor="middle" class="label">CLI App</text>
+          <text x="1186" y="478" text-anchor="middle" class="sub">run(command)</text>
+          <text x="1186" y="493" text-anchor="middle" class="sub">build service</text>
+          <text x="1186" y="508" text-anchor="middle" class="sub">search</text>
+
+          <rect x="1274" y="438" width="82" height="92" rx="7" fill="#0f172a"/>
+          <rect x="1274" y="438" width="82" height="92" rx="7" fill="rgba(6,78,59,.45)" stroke="#34d399" stroke-width="1.5"/>
+          <text x="1315" y="476" text-anchor="middle" class="label">Search</text>
+          <text x="1315" y="494" text-anchor="middle" class="label">Response</text>
+
+          <rect x="1024" y="618" width="304" height="170" rx="8" fill="#0f172a"/>
+          <rect x="1024" y="618" width="304" height="170" rx="8" fill="rgba(15,23,42,.72)" stroke="#334155"/>
+          <text x="1176" y="646" text-anchor="middle" class="label">hidden in runner</text>
+          <text x="1058" y="678" class="tiny">• build SearchQuery/SearchCommand</text>
+          <text x="1058" y="704" class="tiny">• select provider</text>
+          <text x="1058" y="730" class="tiny">• construct service</text>
+          <text x="1058" y="756" class="tiny">• call service.search(...)</text>
+
+          <rect x="1006" y="842" width="352" height="76" rx="8" fill="rgba(120,53,15,.3)" stroke="#fbbf24"/>
+          <text x="1182" y="872" text-anchor="middle" class="note">Best for command-oriented CLI</text>
+          <text x="1182" y="896" text-anchor="middle" class="sub">clean top level, less reusable service access</text>
+
+          <!-- Legend -->
+          <rect x="52" y="996" width="16" height="16" rx="3" fill="rgba(8,51,68,.45)" stroke="#22d3ee"/>
+          <text x="78" y="1008" class="tiny">CLI edge</text>
+          <rect x="176" y="996" width="16" height="16" rx="3" fill="rgba(6,78,59,.45)" stroke="#34d399"/>
+          <text x="202" y="1008" class="tiny">application/composition</text>
+          <rect x="376" y="996" width="16" height="16" rx="3" fill="rgba(76,29,149,.45)" stroke="#a78bfa"/>
+          <text x="402" y="1008" class="tiny">service/factory abstraction</text>
+          <rect x="614" y="996" width="16" height="16" rx="3" fill="rgba(120,53,15,.35)" stroke="#fbbf24"/>
+          <text x="640" y="1008" class="tiny">config/runtime</text>
+          <rect x="786" y="996" width="16" height="16" rx="3" fill="rgba(136,19,55,.4)" stroke="#fb7185"/>
+          <text x="812" y="1008" class="tiny">smelly coupling</text>
+        </svg>
+      </div>
+
+      <section class="cards">
+        <article class="card">
+          <h2 style="color:#34d399;">The likely move</h2>
+          <p>Use Option 1 first: one composition helper moves the messy provider wiring out of main while keeping the model easy to read.</p>
+        </article>
+        <article class="card">
+          <h2 style="color:#a78bfa;">What not to do yet</h2>
+          <p>Do not introduce the registry unless provider count, config sources, or test injection pressure actually grows.</p>
+        </article>
+        <article class="card">
+          <h2 style="color:#fbbf24;">The conceptual split</h2>
+          <p>Construction happens before the request. Execution starts at service.search(query).await.</p>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>
