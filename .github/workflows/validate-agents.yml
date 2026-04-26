@@ -1,0 +1,83 @@
+name: Validate AGENTS.md
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate-agents:
+    name: Validate AGENTS.md Consistency
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify AGENTS.md referenced paths exist
+        run: |
+          set -euo pipefail
+          echo "Checking file paths referenced in AGENTS.md..."
+
+          # Extract file paths from AGENTS.md and check they exist
+          missing=0
+
+          # Check explicit paths in Repository Map
+          paths=(
+            "src/main.rs"
+            "src/domain/query.rs"
+            "src/domain/result.rs"
+            "src/domain/types.rs"
+            "src/domain/error.rs"
+            "src/domain/provider.rs"
+            "src/providers/brave"
+            "src/transport"
+            "src/app"
+            "src/cli/args.rs"
+            "src/cli/output.rs"
+            "tests/architecture_test.rs"
+            "docs"
+            "justfile"
+            "Cargo.toml"
+            "HARNESS.md"
+            ".artifacts/plan/2026-04-14_search-cli/PLAN.md"
+          )
+
+          for path in "${paths[@]}"; do
+            if [ ! -e "$path" ]; then
+              echo "MISSING: $path"
+              missing=$((missing + 1))
+            else
+              echo "OK: $path"
+            fi
+          done
+
+          if [ "$missing" -gt 0 ]; then
+            echo "Error: $missing referenced path(s) missing."
+            exit 1
+          fi
+
+          echo "All referenced paths exist."
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install just and mdbook
+        uses: taiki-e/install-action@v2
+        with:
+          tool: just,mdbook
+
+      - name: Verify canonical commands work
+        run: |
+          echo "Checking cargo fmt --check..."
+          cargo fmt --check
+
+          echo "Checking cargo clippy..."
+          cargo clippy -- -D warnings -W clippy::complexity -W clippy::cognitive_complexity
+
+          echo "Checking cargo test..."
+          cargo test
+
+          echo "Checking mdbook build..."
+          mdbook build
+
+          echo "All canonical commands validated."
