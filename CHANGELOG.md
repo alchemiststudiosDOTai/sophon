@@ -21,22 +21,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Bootstrap**: Provider registry (`src/bootstrap/provider_registry.rs`) for compile-time provider registration and metadata discovery.
-- **Docs Guard**: Markdown frontmatter validator and Cargo-managed pre-push hook for the canonical `just check` gate.
+- Provider registry composition layer for built-in provider registration, provider metadata discovery, and `SearchService` construction. (#7)
+- Environment-filtered structured tracing spans for startup, search orchestration, provider adapters, and HTTP transport. Logs are written to stderr so CLI result output stays clean. (#8)
+- Markdown frontmatter validation and mdBook frontmatter stripping in the canonical `just check` gate. (#9)
+- Cargo-managed pre-push hook that runs `just check`. (#9)
+- Repository operating surfaces: `.env.example`, CODEOWNERS, issue and PR templates, label definitions, AGENTS validation CI, and a `sophon-cli` agent skill. (#6)
 
 ### Changed
 
-- **Main**: Refactored to use provider registry for provider instantiation instead of direct constructor calls.
-- **Architecture Tests**: Updated to allow `bootstrap` module imports from `main.rs`.
-- **HARNESS.md**: Updated harness map to reflect current validation chain.
-- **Artifacts**: `.artifacts/` is now ignored and no longer tracked in Git.
-- **Exa**: Default `/search` `contents` now requests **highlights** (with `maxCharacters` and the user query) and a **query-scoped summary** object instead of full-page **`text`**, so the API is not asked for article bodies for normal CLI usage.
-- **Exa**: Normalized `snippet` is derived as **summary** (trimmed, capped) if non-empty, else **joined highlights** (separator ` … `, capped); **`text` is never used** as a snippet fallback, even when present in the response.
+- `main.rs` now selects providers through `ProviderId` and `ProviderRegistry` instead of directly constructing Brave and Exa clients. (#7)
+- Production startup registers only providers with valid environment configuration, and provider-unavailable errors list configured providers. (#7)
+- Architecture tests now include the `bootstrap` composition layer boundary. (#7)
+- `HARNESS.md` and architecture docs now reflect the bootstrap layer, docs metadata guard, cargo-husky hook, and current validation chain. (#7, #9)
+- Exa `/search` requests use highlights plus a query-scoped summary instead of requesting full-page `text` for normal CLI output. (#5)
+- Exa snippet normalization now prefers trimmed summaries, then capped joined highlights; `text` is not used as a snippet fallback. (#5)
+- CLI news output now prints `snippet` when present, matching web-result rendering. (#5)
 
 ### Fixed
 
-- **Exa**: Web results no longer dump full extracted page markdown into the terminal when `summary` is missing.
+- Exa web results no longer dump full extracted page markdown into the terminal when `summary` is missing. (#5)
 
-### Added
+### Removed
 
-- **CLI**: News rows print **`snippet`** when present, matching web results and providers that populate `NewsResult.snippet`.
+- Tracked `.artifacts/` planning and execution files; future local artifact output is ignored by Git. (#9)
+- Legacy pre-commit configuration in favor of the Cargo-managed pre-push hook. (#9)
+
+### Security
+
+- Structured logging avoids recording provider authentication headers or API keys. (#8)
