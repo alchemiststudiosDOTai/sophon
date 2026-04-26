@@ -10,6 +10,7 @@ use clap::Parser;
 use cli::args::{CliArgs, CliProvider};
 use cli::output::render_text;
 use domain::query::SearchQuery;
+use tracing_subscriber::EnvFilter;
 
 impl From<CliProvider> for ProviderId {
     fn from(provider: CliProvider) -> Self {
@@ -22,6 +23,11 @@ impl From<CliProvider> for ProviderId {
 
 #[tokio::main]
 async fn main() {
+    tracing_subscriber::fmt()
+        .with_env_filter(EnvFilter::from_default_env())
+        .with_writer(std::io::stderr)
+        .init();
+
     dotenvy::dotenv().ok();
 
     let args = CliArgs::parse();
@@ -58,17 +64,22 @@ async fn main() {
     };
 
     let provider_id = ProviderId::from(args.provider);
+    tracing::info!(provider = %provider_id, query = %query.text, "initializing search service");
+
     let registry = ProviderRegistry::production_from_env();
     let service = registry.build(provider_id).unwrap_or_else(|error| {
+        tracing::error!(%error, "failed to build provider");
         eprintln!("{error}");
         std::process::exit(1);
     });
 
     match service.search(query).await {
         Ok(response) => {
+            tracing::info!(result_count = response.results.len(), total_estimated = ?response.total_estimated, "search completed");
             println!("{}", render_text(&response));
         }
         Err(e) => {
+            tracing::error!(error = %e, "search failed");
             eprintln!("Search failed: {}", e);
             std::process::exit(1);
         }

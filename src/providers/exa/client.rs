@@ -105,6 +105,7 @@ impl<C: HttpClient> SearchProvider for ExaProvider<C> {
         }
     }
 
+    #[tracing::instrument(skip(self), fields(query = %query.text, search_type = ?query.search_type))]
     async fn search(&self, query: &SearchQuery) -> Result<SearchResponse, SearchError> {
         let request = self.build_request(query)?;
         let response: ExaSearchResponse = self
