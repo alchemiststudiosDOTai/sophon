@@ -3,7 +3,7 @@ use crate::domain::query::SearchQuery;
 use crate::domain::result::SearchResponse;
 use async_trait::async_trait;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 #[allow(dead_code)]
 pub struct ProviderCapabilities {
     pub web: bool,

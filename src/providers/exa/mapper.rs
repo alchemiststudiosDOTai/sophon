@@ -7,28 +7,32 @@ const SNIPPET_DISPLAY_MAX_CHARS: usize = 500;
 const HIGHLIGHT_JOIN: &str = " … ";
 
 pub fn map_web_response(query: &str, dto: ExaSearchResponse) -> SearchResponse {
-    SearchResponse {
-        query: query.to_string(),
-        provider: "exa".to_string(),
-        total_estimated: None,
-        next_page: None,
-        results: dto
-            .results
-            .into_iter()
-            .map(|result| {
-                let snippet = preferred_snippet(&result);
-                SearchResult::Web(WebResult {
-                    title: result.title.unwrap_or_default(),
-                    url: result.url.unwrap_or_default(),
-                    snippet,
-                    display_url: None,
-                })
-            })
-            .collect(),
-    }
+    map_response(query, dto, |result, snippet| {
+        SearchResult::Web(WebResult {
+            title: result.title.unwrap_or_default(),
+            url: result.url.unwrap_or_default(),
+            snippet,
+            display_url: None,
+        })
+    })
 }
 
 pub fn map_news_response(query: &str, dto: ExaSearchResponse) -> SearchResponse {
+    map_response(query, dto, |result, snippet| {
+        SearchResult::News(NewsResult {
+            title: result.title.unwrap_or_default(),
+            url: result.url.unwrap_or_default(),
+            snippet,
+            source: result.author,
+            published_at: result.published_date,
+        })
+    })
+}
+
+fn map_response<F>(query: &str, dto: ExaSearchResponse, map_result: F) -> SearchResponse
+where
+    F: Fn(ExaResult, Option<String>) -> SearchResult,
+{
     SearchResponse {
         query: query.to_string(),
         provider: "exa".to_string(),
@@ -39,13 +43,7 @@ pub fn map_news_response(query: &str, dto: ExaSearchResponse) -> SearchResponse 
             .into_iter()
             .map(|result| {
                 let snippet = preferred_snippet(&result);
-                SearchResult::News(NewsResult {
-                    title: result.title.unwrap_or_default(),
-                    url: result.url.unwrap_or_default(),
-                    snippet,
-                    source: result.author,
-                    published_at: result.published_date,
-                })
+                map_result(result, snippet)
             })
             .collect(),
     }
