@@ -38,13 +38,14 @@ bootstrap composes app + providers + transport at startup
 
 2. src/main.rs
    └── CliArgs::parse() produces CliArgs { query, provider, search_type, limit, ... }
-   └── converts CliProvider to ProviderId
-   └── asks the bootstrap ProviderRegistry to build SearchService
    └── maps CliArgs → SearchQuery
+   └── for `brave` or `exa`, asks ProviderRegistry::build(provider) for SearchService
+   └── for `all`, asks ProviderRegistry::build_all_enabled() for FanoutSearchService
 
-3. src/app/search_service.rs
-   └── SearchService::search(SearchQuery) awaits
-   └── delegates to dyn SearchProvider
+3. src/app/search_service.rs or src/app/fanout_search_service.rs
+   └── SearchService::search(SearchQuery) awaits one provider
+   └── FanoutSearchService::search_all(SearchQuery) awaits enabled providers sequentially
+   └── delegates to dyn SearchProvider trait objects
 
 4. src/providers/*/client.rs
    └── provider-specific SearchProvider::search(&SearchQuery)
@@ -62,7 +63,8 @@ bootstrap composes app + providers + transport at startup
    └── transforms DTOs into domain SearchResult::News items
 
 7. src/cli/output.rs
-   └── render_text(&SearchResponse) → String
+   └── render_text(&SearchResponse) → String for single-provider output
+   └── render_fanout_text(&SearchBatchResponse) → String for all-provider output
 
 8. src/main.rs
    └── println!("{}", rendered_string)
@@ -75,11 +77,13 @@ Every public function that crosses a module boundary uses a domain type.
 | Boundary | Function | Input type | Output type |
 |----------|----------|------------|-------------|
 | CLI → App | `SearchService::search` | `SearchQuery` | `Result<SearchResponse, SearchError>` |
+| CLI → App | `FanoutSearchService::search_all` | `SearchQuery` | `SearchBatchResponse` |
 | App → Provider | `SearchProvider::search` | `&SearchQuery` | `Result<SearchResponse, SearchError>` |
 | Provider → Transport | `HttpClient::{get_json, post_json}` | `url, headers, params/body` | `Result<T, SearchError>` |
 | Transport → Provider | (JSON response body) | bytes | provider DTOs such as `Brave*Response` or `ExaSearchResponse` |
 | Provider → Domain | `map_*_response` | provider DTOs | `SearchResponse` |
-| App → CLI | `render_text` | `&SearchResponse` | `String` |
+| CLI rendering | `render_text` | `&SearchResponse` | `String` |
+| CLI rendering | `render_fanout_text` | `&SearchBatchResponse` | `String` |
 
 ## Domain type reference
 
@@ -105,7 +109,7 @@ pub struct SearchResponse {
     pub query: String,
     pub provider: String,
     pub results: Vec<SearchResult>,
-    pub total_estimated: Option<usize>,
+    pub total_estimated: Option<u64>,
     pub next_page: Option<PageToken>,
 }
 ```
@@ -116,6 +120,21 @@ pub enum SearchResult {
     News(NewsResult),
     Image(ImageResult),
     Video(VideoResult),
+}
+```
+
+Fan-out results stay provider-agnostic in the domain layer:
+
+```rust
+pub struct SearchBatchResponse {
+    pub query: String,
+    pub responses: Vec<SearchResponse>,
+    pub failures: Vec<ProviderSearchFailure>,
+}
+
+pub struct ProviderSearchFailure {
+    pub provider: String,
+    pub error: SearchError,
 }
 ```
 
@@ -148,8 +167,8 @@ Errors are created at the layer where the failure occurs and bubble upward uncha
 
 1. **Transport layer** — `reqwest` failures, non-2xx HTTP status, or JSON decode errors become `SearchError::Transport`, `SearchError::Provider`, or `SearchError::Decode`.
 2. **Provider layer** — can surface `SearchError` directly; does not wrap in another error type.
-3. **App layer** — `SearchService` returns the `SearchError` untouched.
-4. **CLI layer** — `main.rs` matches on `SearchError` and prints a human-readable message to `stderr`, then exits with code `1`.
+3. **App layer** — `SearchService` returns the `SearchError` untouched; `FanoutSearchService` records per-provider failures in `SearchBatchResponse` and continues to later providers.
+4. **CLI layer** — `main.rs` matches on single-provider `SearchError` and prints a human-readable message to `stderr`, or renders fan-out successes and failures and exits with code `1` when no provider succeeded.
 
 This keeps error handling simple: there is only one error type in the public API.
 
@@ -177,11 +196,14 @@ Unsupported Exa inputs are rejected at runtime instead of being ignored: `Images
 
 ## Runtime provider selection
 
-`main.rs` remains the binary edge that chooses the requested provider ID. Concrete provider construction lives in `src/bootstrap/provider_registry.rs`, where typed provider config, HTTP transport, provider clients, and `SearchService` are composed.
+`main.rs` remains the binary edge that chooses either a single-provider path or the all-enabled-provider fan-out path. Concrete provider construction lives in `src/bootstrap/provider_registry.rs`, where typed provider config, HTTP transport, provider clients, `SearchService`, and `FanoutSearchService` are composed.
 
-- `--provider brave` maps to `ProviderId::Brave`; the registry includes it only when `BRAVE_API_KEY` is configured
-- `--provider exa` maps to `ProviderId::Exa`; the registry includes it only when `EXA_API_KEY` is configured
+- `--provider brave` uses `ProviderRegistry::build(ProviderId::Brave)`; the registry includes it only when `BRAVE_API_KEY` is configured
+- `--provider exa` uses `ProviderRegistry::build(ProviderId::Exa)`; the registry includes it only when `EXA_API_KEY` is configured
+- `--provider all` uses `ProviderRegistry::build_all_enabled()` to build a `FanoutSearchService` from every configured provider in stable order
 - omitting `--provider` still selects Brave
+
+`FanoutSearchService` is application-layer orchestration over multiple domain `SearchProvider` trait objects. It does not render output; fan-out rendering remains in the CLI layer through `render_fanout_text`.
 
 ## Architecture enforcement
 

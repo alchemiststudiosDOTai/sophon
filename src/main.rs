@@ -8,15 +8,32 @@ mod transport;
 use bootstrap::provider_registry::{ProviderId, ProviderRegistry};
 use clap::Parser;
 use cli::args::{CliArgs, CliProvider};
-use cli::output::render_text;
+use cli::output::{render_fanout_text, render_text};
 use domain::query::SearchQuery;
 use tracing_subscriber::EnvFilter;
 
-impl From<CliProvider> for ProviderId {
-    fn from(provider: CliProvider) -> Self {
-        match provider {
-            CliProvider::Brave => ProviderId::Brave,
-            CliProvider::Exa => ProviderId::Exa,
+async fn run_single_provider(
+    registry: &ProviderRegistry,
+    provider_id: ProviderId,
+    query: SearchQuery,
+) {
+    tracing::info!(provider = %provider_id, query = %query.text, "initializing search service");
+
+    let service = registry.build(provider_id).unwrap_or_else(|error| {
+        tracing::error!(%error, "failed to build provider");
+        eprintln!("{error}");
+        std::process::exit(1);
+    });
+
+    match service.search(query).await {
+        Ok(response) => {
+            tracing::info!(result_count = response.results.len(), total_estimated = ?response.total_estimated, "search completed");
+            println!("{}", render_text(&response));
+        }
+        Err(e) => {
+            tracing::error!(error = %e, "search failed");
+            eprintln!("Search failed: {}", e);
+            std::process::exit(1);
         }
     }
 }
@@ -63,25 +80,29 @@ async fn main() {
         time_range: None,
     };
 
-    let provider_id = ProviderId::from(args.provider);
-    tracing::info!(provider = %provider_id, query = %query.text, "initializing search service");
-
     let registry = ProviderRegistry::production_from_env();
-    let service = registry.build(provider_id).unwrap_or_else(|error| {
-        tracing::error!(%error, "failed to build provider");
-        eprintln!("{error}");
-        std::process::exit(1);
-    });
 
-    match service.search(query).await {
-        Ok(response) => {
-            tracing::info!(result_count = response.results.len(), total_estimated = ?response.total_estimated, "search completed");
-            println!("{}", render_text(&response));
-        }
-        Err(e) => {
-            tracing::error!(error = %e, "search failed");
-            eprintln!("Search failed: {}", e);
-            std::process::exit(1);
+    match args.provider {
+        CliProvider::Brave => run_single_provider(&registry, ProviderId::Brave, query).await,
+        CliProvider::Exa => run_single_provider(&registry, ProviderId::Exa, query).await,
+        CliProvider::All => {
+            tracing::info!(query = %query.text, "initializing all-enabled provider fan-out service");
+            let service = registry.build_all_enabled().unwrap_or_else(|error| {
+                tracing::error!(%error, "failed to build fan-out providers");
+                eprintln!("{error}");
+                std::process::exit(1);
+            });
+
+            let response = service.search_all(query).await;
+            tracing::info!(
+                successful_providers = response.responses.len(),
+                failed_providers = response.failures.len(),
+                "fan-out search completed"
+            );
+            println!("{}", render_fanout_text(&response));
+            if response.responses.is_empty() {
+                std::process::exit(1);
+            }
         }
     }
 }
