@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `--provider all` fan-out mode that queries every environment-enabled provider and renders per-provider successes and failures. (#11)
 - Provider registry composition layer for built-in provider registration, provider metadata discovery, and `SearchService` construction. (#7)
 - Environment-filtered structured tracing spans for startup, search orchestration, provider adapters, and HTTP transport. Logs are written to stderr so CLI result output stays clean. (#8)
 - Markdown frontmatter validation and mdBook frontmatter stripping in the canonical `just check` gate. (#9)
