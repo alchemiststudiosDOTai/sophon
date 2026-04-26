@@ -1,0 +1,2 @@
+# Relative paths allowed to exceed the large-file threshold.
+docs/sophon.png
