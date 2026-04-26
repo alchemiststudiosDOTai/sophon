@@ -84,7 +84,7 @@ No link checker or nav check is configured.
 ### Layer 6: CI Matrix
 | Workflow | Trigger | Checks |
 |----------|---------|--------|
-| `.github/workflows/validate-agents.yml` | pull requests and pushes to `main` | Verifies key `AGENTS.md` referenced paths exist, installs `just`/`mdbook`, and runs `just check` |
+| `.github/workflows/validate-agents.yml` | pull requests and pushes to `main` | Verifies key `AGENTS.md` referenced paths exist, installs `just`/`mdbook`/`cargo-udeps`, and runs `just check` + `just hygiene` |
 
 ### Layer 7: Evidence Workflow
 | Artifact | Location | Tracking | Notes |
@@ -111,12 +111,19 @@ Ordered list of checks as executed by the canonical entry point:
 4. `python3 scripts/check_markdown_frontmatter.py`
 5. `mdbook build`
 
+Ordered list of hygiene checks as executed by the hygiene entry point:
+1. `cargo +nightly udeps`
+2. `npx --yes jscpd@4.0.5`
+3. `bash scripts/check_tech_debt.sh`
+4. `bash scripts/check_large_files.sh`
+
 ## Quick Reference
 - **Run all local checks:** `just check`
+- **Run all hygiene checks:** `just hygiene`
 - **Run tests only:** `cargo test`
 - **Run lint only:** `cargo clippy -- -D warnings -W clippy::complexity -W clippy::cognitive_complexity`
 - **Run formatter check only:** `cargo fmt --check`
-- **Run CI locally:** `just check` covers the workflow's canonical command; path existence checks are in `.github/workflows/validate-agents.yml`
+- **Run CI locally:** `just check && just hygiene` covers workflow command checks; path existence checks are in `.github/workflows/validate-agents.yml`
 - **Add a new check:** Edit `justfile` and append to the `check` recipe
 
 ## Source Index
