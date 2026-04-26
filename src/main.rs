@@ -17,6 +17,7 @@ impl From<CliProvider> for ProviderId {
         match provider {
             CliProvider::Brave => ProviderId::Brave,
             CliProvider::Exa => ProviderId::Exa,
+            CliProvider::All => panic!("all-provider mode is handled by fan-out wiring"),
         }
     }
 }
