@@ -63,12 +63,7 @@ mod tests {
         fn capabilities(&self) -> ProviderCapabilities {
             ProviderCapabilities {
                 web: true,
-                news: false,
-                images: false,
-                videos: false,
-                pagination: false,
-                safe_search: false,
-                time_range_filter: false,
+                ..ProviderCapabilities::default()
             }
         }
 
