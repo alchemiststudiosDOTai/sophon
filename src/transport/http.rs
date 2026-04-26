@@ -34,11 +34,17 @@ pub struct ReqwestHttpClient {
     client: Client,
 }
 
-impl ReqwestHttpClient {
-    pub fn new() -> Self {
+impl Default for ReqwestHttpClient {
+    fn default() -> Self {
         Self {
             client: Client::new(),
         }
+    }
+}
+
+impl ReqwestHttpClient {
+    pub fn new() -> Self {
+        Self::default()
     }
 
     async fn decode_response<T>(response: Response) -> Result<T, SearchError>
