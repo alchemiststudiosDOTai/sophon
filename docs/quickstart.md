@@ -1,3 +1,15 @@
+---
+title: "Quick Start"
+when_to_read:
+  - "When reading or editing the mdBook documentation surface."
+  - "When checking how the CLI architecture, quickstart, and user-facing docs fit together."
+summary: "mdBook documentation page for sophon-cli: Quick Start. It contributes user and maintainer guidance that is built by the docs gate."
+ontology_relations:
+  - relation: "part_of"
+    target: "docs/SUMMARY.md"
+    note: "Belongs to the mdBook documentation set."
+---
+
 # Quick Start
 
 ## Prerequisites

@@ -1,3 +1,15 @@
+---
+title: "Pull Request Template"
+when_to_read:
+  - "When opening or maintaining pull request guidance for contributors."
+  - "When changing review, validation, or documentation expectations for proposed changes."
+summary: "GitHub pull request template that prompts contributors for change scope, validation evidence, and reviewer context."
+ontology_relations:
+  - relation: "supports"
+    target: "github-pr-review"
+    note: "Guides pull request authors and reviewers."
+---
+
 ## Description
 
 <!-- What does this PR do and why? -->

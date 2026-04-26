@@ -4,6 +4,15 @@ phase: Research
 date: "2026-04-14"
 owner: "agent"
 tags: [research, harness, sophon-cli, rust]
+
+when_to_read:
+  - "When validating local checks, architecture gates, tests, docs builds, or CI coverage."
+  - "When changing the repository harness or deciding which command proves the repo is healthy."
+summary: "Harness map for sophon-cli, describing the canonical check command, test layers, architecture boundaries, documentation gates, and known validation gaps."
+ontology_relations:
+  - relation: "defines"
+    target: "repository-harness"
+    note: "Documents the checks that protect changes in this repository."
 ---
 
 # sophon-cli – Harness Map
@@ -12,11 +21,12 @@ A living map of the mechanical checks, policies, workflows, and artifacts that m
 
 ## Canonical Entry Point
 
-- `justfile:1-5` defines the `check` recipe:
+- `justfile:1-6` defines the `check` recipe:
   1. `cargo fmt --check`
   2. `cargo clippy -- -D warnings -W clippy::complexity -W clippy::cognitive_complexity`
   3. `cargo test`
-  4. `mdbook build`
+  4. `python3 scripts/check_markdown_frontmatter.py`
+  5. `mdbook build`
 
 There is no Makefile, npm script, or other local entrypoint. `just check` is the canonical umbrella command.
 
@@ -28,6 +38,7 @@ There is no Makefile, npm script, or other local entrypoint. `just check` is the
 | Format | `cargo fmt --check` | `Cargo.toml` edition 2024 | Rust style consistency |
 | Lint / complexity | `cargo clippy -- -D warnings -W clippy::complexity -W clippy::cognitive_complexity` | `Cargo.toml` | Correctness + complexity ceiling |
 | Tests | `cargo test` | `Cargo.toml` | Behavioral verification |
+| Docs metadata | `python3 scripts/check_markdown_frontmatter.py` | `scripts/check_markdown_frontmatter.py` | Required Markdown frontmatter except `AGENTS.md`, `README.md`, and `docs/SUMMARY.md` |
 | Docs build | `mdbook build` | `book.toml` | Documentation compiles |
 
 ### Layer 2: Architecture Boundaries
@@ -60,28 +71,32 @@ No snapshot, golden, or integration test suites exist.
 ### Layer 5: Docs Ratchet
 | Check | Command | Allowlist | Notes |
 |-------|---------|-----------|-------|
+| Frontmatter | `python3 scripts/check_markdown_frontmatter.py` | `AGENTS.md`, `README.md`, `docs/SUMMARY.md` | Requires `title`, `when_to_read`, `summary`, and structured `ontology_relations` |
 | Docs build | `mdbook build` | n/a | Fails if markdown or `book.toml` is malformed |
 
-No link checker, frontmatter validator, or nav check is configured.
+No link checker or nav check is configured.
+
+### Layer 5.5: Git Hooks
+| Hook | Source | Installed By | Runs |
+|------|--------|--------------|------|
+| pre-push | `.cargo-husky/hooks/pre-push` | `cargo-husky` dev dependency during `cargo test` | `just check` |
 
 ### Layer 6: CI Matrix
 No CI is currently configured. There is no `.github/workflows/`, `.gitlab-ci.yml`, or equivalent.
 
 ### Layer 7: Evidence Workflow
-| Artifact | Location | Triggers | Format |
-|----------|----------|----------|--------|
-| Plan | `.artifacts/plan/2026-04-14_search-cli/PLAN.md` | Manual (plan-phase) | Markdown |
-| Tickets | `.artifacts/plan/2026-04-14_search-cli/tickets/T*.md` | Plan decomposition | Markdown |
-| Execution log | `.artifacts/execute/2026-04-14_search-cli.md` | Per-task updates | Markdown |
+| Artifact | Location | Tracking | Notes |
+|----------|----------|----------|-------|
+| Local agent artifacts | `.artifacts/` | Ignored by Git | Research, planning, execution logs, and generated design notes may exist locally but are not repository sources of truth |
 
-These are human-maintained research/execution artifacts, not mechanically enforced.
+These are human-maintained local artifacts, not mechanically enforced.
 
 ### Layer 8: Operator Surface
 | Surface | Location | Purpose | Usage |
 |---------|----------|---------|-------|
-| PRD | `PRD.md` | Product requirements & design rules | Read before implementing |
-| Plan | `.artifacts/plan/2026-04-14_search-cli/PLAN.md` | Implementation plan | Execute-phase reference |
-| Execution log | `.artifacts/execute/2026-04-14_search-cli.md` | Debug history & task status | Update after each ticket |
+| README | `README.md` | User-facing package overview | Read for installation, configuration, and CLI examples |
+| mdBook docs | `docs/` | Maintainer and user documentation | Read for architecture and quickstart details |
+| Harness map | `HARNESS.md` | Checks, hooks, and validation chain | Read before changing repository gates |
 
 `AGENTS.md` exists at the repository root. There is no `.codex/` directory inside the repo.
 
@@ -91,7 +106,8 @@ Ordered list of checks as executed by the canonical entry point:
 1. `cargo fmt --check`
 2. `cargo clippy -- -D warnings -W clippy::complexity -W clippy::cognitive_complexity`
 3. `cargo test`
-4. `mdbook build`
+4. `python3 scripts/check_markdown_frontmatter.py`
+5. `mdbook build`
 
 ## Quick Reference
 - **Run all local checks:** `just check`
@@ -104,16 +120,15 @@ Ordered list of checks as executed by the canonical entry point:
 ## Source Index
 | File | What It Contributes |
 |------|---------------------|
-| `justfile:1-5` | Canonical local check gate |
+| `justfile:1-6` | Canonical local check gate |
+| `.cargo-husky/hooks/pre-push` | Cargo-managed pre-push hook that runs `just check` |
+| `scripts/check_markdown_frontmatter.py` | Markdown frontmatter and ontology relation validator |
 | `AGENTS.md` | Operator-facing navigational map |
 | `docs/` | mdBook source: intro, architecture, quickstart |
 | `book.toml` | mdBook configuration |
-| `Cargo.toml` | Project manifest, dependencies, edition 2024 |
+| `Cargo.toml` | Project manifest, dependencies, edition 2024, cargo-husky hook installer |
 | `src/bootstrap/provider_registry.rs` | Built-in provider registry and service construction tests |
 | `src/providers/brave/mapper.rs` | 4 unit tests for DTO→domain mapping |
 | `src/providers/brave/client.rs` | 1 mock-HTTP unit test for Brave provider |
 | `src/app/search_service.rs` | 1 mock-provider unit test for SearchService |
 | `src/cli/output.rs` | 1 unit test for text output rendering |
-| `.artifacts/plan/2026-04-14_search-cli/PLAN.md` | Implementation plan (evidence) |
-| `.artifacts/execute/2026-04-14_search-cli.md` | Execution log (evidence) |
-| `PRD.md` | Product requirements & operator guidance |

@@ -4,6 +4,15 @@ about: Report a bug or unexpected behavior
 title: "[BUG] "
 labels: ["bug", "triage"]
 assignees: ""
+
+when_to_read:
+  - "When filing or maintaining GitHub issue templates for this repository."
+  - "When changing the triage questions expected from contributors."
+summary: "GitHub issue template used to collect structured contributor input for Bug Report."
+ontology_relations:
+  - relation: "supports"
+    target: "github-issue-triage"
+    note: "Shapes incoming issue reports for maintainers."
 ---
 
 ## Describe the bug
