@@ -38,6 +38,7 @@ impl<C: HttpClient> SearchProvider for BraveProvider<C> {
         }
     }
 
+    #[tracing::instrument(skip(self), fields(query = %query.text, search_type = ?query.search_type))]
     async fn search(&self, query: &SearchQuery) -> Result<SearchResponse, SearchError> {
         let endpoint = match query.search_type {
             SearchType::Web => "web/search",

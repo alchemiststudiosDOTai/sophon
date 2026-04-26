@@ -12,8 +12,14 @@ impl SearchService {
         Self { provider }
     }
 
+    #[tracing::instrument(skip(self), fields(query = %query.text, provider = %self.provider.id()))]
     pub async fn search(&self, query: SearchQuery) -> Result<SearchResponse, SearchError> {
-        self.provider.search(&query).await
+        tracing::debug!("delegating search to provider");
+        let result = self.provider.search(&query).await;
+        if let Err(ref e) = result {
+            tracing::warn!(error = %e, "provider search returned error");
+        }
+        result
     }
 }
 
