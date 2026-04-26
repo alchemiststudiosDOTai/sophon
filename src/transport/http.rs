@@ -66,6 +66,7 @@ impl ReqwestHttpClient {
 
 #[async_trait]
 impl HttpClient for ReqwestHttpClient {
+    #[tracing::instrument(skip(self), fields(url = %url))]
     async fn get_json<T>(
         &self,
         url: &str,
@@ -85,9 +86,11 @@ impl HttpClient for ReqwestHttpClient {
             .await
             .map_err(|e| SearchError::Transport(e.to_string()))?;
 
+        tracing::debug!(status = %resp.status(), "received HTTP response");
         Self::decode_response(resp).await
     }
 
+    #[tracing::instrument(skip(self, body), fields(url = %url))]
     async fn post_json<T, B>(
         &self,
         url: &str,
@@ -108,6 +111,7 @@ impl HttpClient for ReqwestHttpClient {
             .await
             .map_err(|e| SearchError::Transport(e.to_string()))?;
 
+        tracing::debug!(status = %resp.status(), "received HTTP response");
         Self::decode_response(resp).await
     }
 }

@@ -35,6 +35,12 @@
 - `justfile` — canonical local check gate
 - `Cargo.toml` — dependencies and edition 2024
 
+## Observability
+- Structured logging is provided by `tracing` (with `tracing-subscriber` formatting).
+- Log output is written to **stderr** so stdout remains clean for CLI results.
+- Control verbosity via the `RUST_LOG` environment variable (e.g. `RUST_LOG=debug`).
+- Key spans: `main` (startup), `SearchService::search` (orchestration), `BraveProvider::search` / `ExaProvider::search` (provider adapters), `ReqwestHttpClient::{get_json,post_json}` (transport).
+
 ## Change Guardrails
 - Run `just check` before committing.
 - Keep domain types provider-agnostic; add provider-specific logic in `src/providers/`.
