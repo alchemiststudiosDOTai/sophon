@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::fmt;
 
+use crate::app::fanout_search_service::FanoutSearchService;
 use crate::app::search_service::SearchService;
 use crate::domain::provider::SearchProvider;
 use crate::providers::brave::client::BraveProvider;
@@ -37,6 +38,8 @@ pub enum BuildSearchServiceError {
         provider: ProviderId,
         available: Vec<ProviderId>,
     },
+    #[error("no configured providers; set BRAVE_API_KEY and/or EXA_API_KEY")]
+    NoProvidersAvailable,
 }
 
 impl ProviderRegistry {
@@ -97,6 +100,26 @@ impl ProviderRegistry {
 
         Ok(SearchService::new(builder()))
     }
+
+    pub fn build_all_enabled(&self) -> Result<FanoutSearchService, BuildSearchServiceError> {
+        let provider_ids = self.available_providers();
+        if provider_ids.is_empty() {
+            return Err(BuildSearchServiceError::NoProvidersAvailable);
+        }
+
+        let providers = provider_ids
+            .into_iter()
+            .map(|provider_id| {
+                let builder = self
+                    .builders
+                    .get(&provider_id)
+                    .expect("available provider has a registered builder");
+                builder()
+            })
+            .collect();
+
+        Ok(FanoutSearchService::new(providers))
+    }
 }
 
 #[cfg(test)]
@@ -106,6 +129,7 @@ mod tests {
     use crate::domain::provider::ProviderCapabilities;
     use crate::domain::query::SearchQuery;
     use crate::domain::result::SearchResponse;
+    use crate::domain::types::SearchType;
     use async_trait::async_trait;
     use std::ffi::OsString;
     use std::sync::{Mutex, OnceLock};
@@ -141,6 +165,52 @@ mod tests {
         }
     }
 
+    struct NamedMockProvider {
+        id: &'static str,
+    }
+
+    #[async_trait]
+    impl SearchProvider for NamedMockProvider {
+        fn id(&self) -> String {
+            self.id.to_string()
+        }
+
+        fn capabilities(&self) -> ProviderCapabilities {
+            ProviderCapabilities {
+                web: true,
+                news: true,
+                images: false,
+                videos: false,
+                pagination: false,
+                safe_search: false,
+                time_range_filter: false,
+            }
+        }
+
+        async fn search(&self, query: &SearchQuery) -> Result<SearchResponse, SearchError> {
+            Ok(SearchResponse {
+                query: query.text.clone(),
+                provider: self.id.to_string(),
+                results: vec![],
+                total_estimated: None,
+                next_page: None,
+            })
+        }
+    }
+
+    fn search_query() -> SearchQuery {
+        SearchQuery {
+            text: "rust".to_string(),
+            search_type: SearchType::Web,
+            limit: None,
+            offset: None,
+            safe_search: None,
+            country: None,
+            language: None,
+            time_range: None,
+        }
+    }
+
     fn env_lock() -> &'static Mutex<()> {
         static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
         LOCK.get_or_init(|| Mutex::new(()))
@@ -170,6 +240,7 @@ mod tests {
                 assert!(available.is_empty());
             }
             Ok(_) => panic!("expected ProviderUnavailable error"),
+            Err(other) => panic!("expected ProviderUnavailable error, got {other}"),
         }
     }
 
@@ -211,5 +282,38 @@ mod tests {
             registry.available_providers(),
             vec![ProviderId::Brave, ProviderId::Exa]
         );
+    }
+
+    #[tokio::test]
+    async fn build_all_enabled_uses_stable_order_and_rejects_empty_registry() {
+        let empty = ProviderRegistry::empty();
+        match empty.build_all_enabled() {
+            Err(BuildSearchServiceError::NoProvidersAvailable) => {}
+            Ok(_) => panic!("expected NoProvidersAvailable error"),
+            Err(other) => panic!("expected NoProvidersAvailable error, got {other}"),
+        }
+
+        let mut registry = ProviderRegistry::empty();
+        registry.register(
+            ProviderId::Exa,
+            Box::new(|| Box::new(NamedMockProvider { id: "exa" })),
+        );
+        registry.register(
+            ProviderId::Brave,
+            Box::new(|| Box::new(NamedMockProvider { id: "brave" })),
+        );
+
+        let service = registry
+            .build_all_enabled()
+            .expect("fan-out service builds");
+        let batch = service.search_all(search_query()).await;
+
+        let providers: Vec<&str> = batch
+            .responses
+            .iter()
+            .map(|response| response.provider.as_str())
+            .collect();
+        assert_eq!(providers, vec!["brave", "exa"]);
+        assert!(batch.failures.is_empty());
     }
 }

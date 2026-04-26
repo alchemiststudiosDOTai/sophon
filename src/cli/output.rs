@@ -1,4 +1,4 @@
-use crate::domain::result::{SearchResponse, SearchResult};
+use crate::domain::result::{SearchBatchResponse, SearchResponse, SearchResult};
 
 pub fn render_text(response: &SearchResponse) -> String {
     let mut lines = vec![
@@ -46,9 +46,34 @@ pub fn render_text(response: &SearchResponse) -> String {
     lines.join("\n")
 }
 
+pub fn render_fanout_text(response: &SearchBatchResponse) -> String {
+    let mut lines = vec![
+        format!("Query: {}", response.query),
+        format!("Providers succeeded: {}", response.responses.len()),
+        format!("Providers failed: {}", response.failures.len()),
+        String::new(),
+    ];
+
+    for provider_response in &response.responses {
+        lines.push(format!("== {} ==", provider_response.provider));
+        lines.push(render_text(provider_response));
+        lines.push(String::new());
+    }
+
+    if !response.failures.is_empty() {
+        lines.push("== Failures ==".to_string());
+        for failure in &response.failures {
+            lines.push(format!("- {}: {}", failure.provider, failure.error));
+        }
+    }
+
+    lines.join("\n")
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::domain::error::SearchError;
     use crate::domain::result::*;
 
     #[test]
@@ -96,5 +121,37 @@ mod tests {
         assert!(text.contains("Breaking update"));
         assert!(text.contains("[IMAGE] Rust Logo"));
         assert!(text.contains("[VIDEO] Rust Tutorial"));
+    }
+
+    #[test]
+    fn test_render_fanout_text_includes_successes_and_failures() {
+        let response = SearchBatchResponse {
+            query: "rust".to_string(),
+            responses: vec![SearchResponse {
+                query: "rust".to_string(),
+                provider: "brave".to_string(),
+                results: vec![SearchResult::Web(WebResult {
+                    title: "Rust Lang".to_string(),
+                    url: "https://rust-lang.org".to_string(),
+                    snippet: Some("Safe systems".to_string()),
+                    display_url: None,
+                })],
+                total_estimated: None,
+                next_page: None,
+            }],
+            failures: vec![ProviderSearchFailure {
+                provider: "exa".to_string(),
+                error: SearchError::InvalidQuery("unsupported".to_string()),
+            }],
+        };
+
+        let text = render_fanout_text(&response);
+
+        assert!(text.contains("Query: rust"));
+        assert!(text.contains("Providers succeeded: 1"));
+        assert!(text.contains("Providers failed: 1"));
+        assert!(text.contains("== brave =="));
+        assert!(text.contains("Rust Lang"));
+        assert!(text.contains("- exa: invalid query: unsupported"));
     }
 }

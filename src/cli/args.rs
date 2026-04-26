@@ -41,6 +41,7 @@ impl From<CliSafeSearch> for crate::domain::types::SafeSearch {
 pub enum CliProvider {
     Brave,
     Exa,
+    All,
 }
 
 #[derive(Parser, Debug)]
@@ -87,6 +88,17 @@ mod tests {
         assert_eq!(exa_args.search_type, CliSearchType::Web);
 
         let default_args = CliArgs::parse_from(["sophon-cli", "rust"]);
+        assert_eq!(default_args.provider, CliProvider::Brave);
+    }
+
+    #[test]
+    fn test_cli_provider_parses_all_and_defaults_to_brave() {
+        let all_args = CliArgs::try_parse_from(["sophon-cli", "rust", "--provider", "all"])
+            .expect("all provider parses");
+        assert_eq!(all_args.provider, CliProvider::All);
+
+        let default_args =
+            CliArgs::try_parse_from(["sophon-cli", "rust"]).expect("default provider parses");
         assert_eq!(default_args.provider, CliProvider::Brave);
     }
 }
