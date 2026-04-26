@@ -66,7 +66,7 @@ impl ReqwestHttpClient {
 
 #[async_trait]
 impl HttpClient for ReqwestHttpClient {
-    #[tracing::instrument(skip(self), fields(url = %url))]
+    #[tracing::instrument(skip(self, headers), fields(url = %url))]
     async fn get_json<T>(
         &self,
         url: &str,
@@ -90,7 +90,7 @@ impl HttpClient for ReqwestHttpClient {
         Self::decode_response(resp).await
     }
 
-    #[tracing::instrument(skip(self, body), fields(url = %url))]
+    #[tracing::instrument(skip(self, headers, body), fields(url = %url))]
     async fn post_json<T, B>(
         &self,
         url: &str,
