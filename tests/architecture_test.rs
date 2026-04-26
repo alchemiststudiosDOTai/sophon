@@ -35,6 +35,12 @@ fn test_app_does_not_import_cli() {
 }
 
 #[test]
+fn test_bootstrap_does_not_import_cli() {
+    let forbidden = ["use crate::cli::"];
+    check_dir_for_forbidden_patterns("src/bootstrap", &forbidden);
+}
+
+#[test]
 fn test_render_text_only_called_from_cli() {
     let forbidden_dirs = ["src/domain", "src/transport", "src/providers", "src/app"];
     for dir in &forbidden_dirs {

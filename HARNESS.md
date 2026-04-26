@@ -37,6 +37,7 @@ There is no Makefile, npm script, or other local entrypoint. `just check` is the
 | transport-isolation | `src/transport/` | `crate::providers`, `crate::cli`, `crate::app` | `tests/architecture_test.rs` |
 | provider-isolation | `src/providers/` | `crate::cli`, `crate::app` | `tests/architecture_test.rs` |
 | app-isolation | `src/app/` | `crate::cli` | `tests/architecture_test.rs` |
+| bootstrap-isolation | `src/bootstrap/` | `crate::cli` | `tests/architecture_test.rs` |
 | render_text-isolation | all except `src/cli/` | `render_text` | `tests/architecture_test.rs` |
 
 Architecture boundary tests run as part of `cargo test`.
@@ -47,12 +48,12 @@ No structural rule engine is currently configured (no ast-grep, semgrep, or cust
 ### Layer 4: Behavioral Verification
 | Test Suite | Command | Location | Notes |
 |------------|---------|----------|-------|
-| Unit tests (inline) | `cargo test` | `src/**/*.rs` under `#[cfg(test)]` | 7 tests across 4 modules |
+| Unit tests (inline) | `cargo test` | `src/**/*.rs` under `#[cfg(test)]` | 22 tests across source modules |
 | Mapper tests | `cargo test` | `src/providers/brave/mapper.rs` | 4 tests: web, news, images, videos DTO→domain mapping |
 | Provider tests | `cargo test` | `src/providers/brave/client.rs` | 1 mock-HTTP test for `BraveProvider::search` |
 | App-layer tests | `cargo test` | `src/app/search_service.rs` | 1 mock-provider test for `SearchService` delegation |
 | Output tests | `cargo test` | `src/cli/output.rs` | 1 text-rendering test with mixed result types |
-| Architecture tests | `cargo test` | `tests/architecture_test.rs` | 5 source-scan tests enforcing layer boundaries |
+| Architecture tests | `cargo test` | `tests/architecture_test.rs` | 6 source-scan tests enforcing layer boundaries |
 
 No snapshot, golden, or integration test suites exist.
 
@@ -108,6 +109,7 @@ Ordered list of checks as executed by the canonical entry point:
 | `docs/` | mdBook source: intro, architecture, quickstart |
 | `book.toml` | mdBook configuration |
 | `Cargo.toml` | Project manifest, dependencies, edition 2024 |
+| `src/bootstrap/provider_registry.rs` | Built-in provider registry and service construction tests |
 | `src/providers/brave/mapper.rs` | 4 unit tests for DTO→domain mapping |
 | `src/providers/brave/client.rs` | 1 mock-HTTP unit test for Brave provider |
 | `src/app/search_service.rs` | 1 mock-provider unit test for SearchService |
