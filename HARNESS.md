@@ -72,7 +72,7 @@ No snapshot, golden, or integration test suites exist.
 | Check | Command | Allowlist | Notes |
 |-------|---------|-----------|-------|
 | Frontmatter | `python3 scripts/check_markdown_frontmatter.py` | `AGENTS.md`, `README.md`, `docs/SUMMARY.md` | Requires `title`, `when_to_read`, `summary`, and structured `ontology_relations` |
-| Docs build | `mdbook build` | n/a | Fails if markdown or `book.toml` is malformed |
+| Docs build | `mdbook build` | n/a | Fails if markdown or `book.toml` is malformed; `scripts/mdbook_strip_frontmatter.py` strips metadata from rendered HTML |
 
 No link checker or nav check is configured.
 
@@ -82,7 +82,9 @@ No link checker or nav check is configured.
 | pre-push | `.cargo-husky/hooks/pre-push` | `cargo-husky` dev dependency during `cargo test` | `just check` |
 
 ### Layer 6: CI Matrix
-No CI is currently configured. There is no `.github/workflows/`, `.gitlab-ci.yml`, or equivalent.
+| Workflow | Trigger | Checks |
+|----------|---------|--------|
+| `.github/workflows/validate-agents.yml` | pull requests and pushes to `main` | Verifies key `AGENTS.md` referenced paths exist, installs `just`/`mdbook`, and runs `just check` |
 
 ### Layer 7: Evidence Workflow
 | Artifact | Location | Tracking | Notes |
@@ -114,7 +116,7 @@ Ordered list of checks as executed by the canonical entry point:
 - **Run tests only:** `cargo test`
 - **Run lint only:** `cargo clippy -- -D warnings -W clippy::complexity -W clippy::cognitive_complexity`
 - **Run formatter check only:** `cargo fmt --check`
-- **Run CI locally:** Not applicable (no CI configured)
+- **Run CI locally:** `just check` covers the workflow's canonical command; path existence checks are in `.github/workflows/validate-agents.yml`
 - **Add a new check:** Edit `justfile` and append to the `check` recipe
 
 ## Source Index
@@ -123,7 +125,9 @@ Ordered list of checks as executed by the canonical entry point:
 | `justfile:1-6` | Canonical local check gate |
 | `.cargo-husky/hooks/pre-push` | Cargo-managed pre-push hook that runs `just check` |
 | `scripts/check_markdown_frontmatter.py` | Markdown frontmatter and ontology relation validator |
+| `scripts/mdbook_strip_frontmatter.py` | mdBook preprocessor that keeps metadata out of rendered HTML |
 | `AGENTS.md` | Operator-facing navigational map |
+| `.github/workflows/validate-agents.yml` | Pull-request AGENTS path and canonical harness check |
 | `docs/` | mdBook source: intro, architecture, quickstart |
 | `book.toml` | mdBook configuration |
 | `Cargo.toml` | Project manifest, dependencies, edition 2024, cargo-husky hook installer |
