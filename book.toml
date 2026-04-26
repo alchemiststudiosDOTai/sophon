@@ -4,4 +4,8 @@ language = "en"
 src = "docs"
 title = "sophon-cli Documentation"
 
+[preprocessor.strip-frontmatter]
+command = "python3 scripts/mdbook_strip_frontmatter.py"
+renderer = ["html"]
+
 [output.html]

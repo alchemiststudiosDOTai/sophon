@@ -1,8 +1,8 @@
 .env
+.artifacts/
 
 
 # Added by cargo
 
 /target
 book/
-

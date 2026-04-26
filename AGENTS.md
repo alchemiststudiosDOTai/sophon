@@ -5,8 +5,8 @@
 - Provider-agnostic domain layer with a Brave-specific adapter behind a trait boundary.
 
 ## Where To Start
-- Implementation plan: `.artifacts/plan/2026-04-14_search-cli/PLAN.md`
 - Harness map (checks, tests, gaps): `HARNESS.md`
+- User-facing docs: `README.md` and `docs/`
 
 ## Repository Map
 - `src/main.rs` — CLI entrypoint; wires `cli::args`, `app::search_service`, `providers::brave`, and `transport::http`

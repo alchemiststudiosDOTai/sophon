@@ -1,6 +1,16 @@
 ---
 name: sophon-cli
 description: Rust CLI for provider-agnostic web search using Brave Search or Exa APIs
+
+title: "sophon-cli Agent Skill"
+when_to_read:
+  - "When using or maintaining the repository-specific Codex skill for sophon-cli."
+  - "When aligning local agent behavior with this project’s commands and boundaries."
+summary: "Repository-specific Codex skill instructions for sophon-cli, capturing project commands, validation expectations, and operational guardrails."
+ontology_relations:
+  - relation: "guides"
+    target: "agent-workflows"
+    note: "Defines agent behavior for this repository."
 ---
 
 # sophon-cli Agent Skill
