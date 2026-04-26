@@ -61,10 +61,21 @@ jobs:
       - name: Setup Rust toolchain
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Install just and mdbook
+      - name: Install just, mdbook, and cargo-udeps
         uses: taiki-e/install-action@v2
         with:
-          tool: just,mdbook
+          tool: just,mdbook,cargo-udeps
+
+      - name: Install nightly toolchain for cargo-udeps
+        uses: dtolnay/rust-toolchain@nightly
 
       - name: Verify canonical command works
         run: just check
+
+      - name: Setup Node.js for jscpd
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Run hygiene checks
+        run: just hygiene

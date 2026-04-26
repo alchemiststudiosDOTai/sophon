@@ -1,0 +1,2 @@
+# Add line substrings that should be ignored by check_tech_debt.sh.
+# Keep this list minimal and review entries regularly.
