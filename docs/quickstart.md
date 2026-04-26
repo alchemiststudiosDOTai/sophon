@@ -15,7 +15,7 @@ ontology_relations:
 ## Prerequisites
 
 - Rust toolchain (edition 2024)
-- `BRAVE_API_KEY` in a `.env` file at the project root
+- `BRAVE_API_KEY` and/or `EXA_API_KEY` in a `.env` file at the project root
 
 ## Install the task runner
 
@@ -34,6 +34,18 @@ just check
 ```bash
 cargo run -- "rust programming"
 ```
+
+## Run all configured providers
+
+Set both provider keys when you want `--provider all` to query Brave and Exa in one run:
+
+```bash
+export BRAVE_API_KEY=your_brave_key
+export EXA_API_KEY=your_exa_key
+cargo run -- "rust async trait" --provider all
+```
+
+`--provider all` includes only providers enabled by the current environment variables. If neither `BRAVE_API_KEY` nor `EXA_API_KEY` is available, the command exits non-zero and prints `no configured providers; set BRAVE_API_KEY and/or EXA_API_KEY`.
 
 ## Search news
 
