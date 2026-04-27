@@ -1,15 +1,8 @@
-mod app;
-mod bootstrap;
-mod cli;
-mod domain;
-mod providers;
-mod transport;
-
-use bootstrap::provider_registry::{ProviderId, ProviderRegistry};
 use clap::Parser;
-use cli::args::{CliArgs, CliProvider};
-use cli::output::{render_fanout_text, render_text};
-use domain::query::SearchQuery;
+use sophon_cli::bootstrap::provider_registry::{ProviderId, ProviderRegistry};
+use sophon_cli::cli::args::{CliArgs, CliProvider};
+use sophon_cli::cli::output::{render_fanout_text, render_text};
+use sophon_cli::domain::query::SearchQuery;
 use tracing_subscriber::EnvFilter;
 
 async fn run_single_provider(
