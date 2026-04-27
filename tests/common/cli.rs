@@ -3,7 +3,10 @@
 use std::process::{Command, Output};
 
 pub fn run_cli(args: &[&str]) -> Output {
-    cli_command(args).output().expect("sophon-cli runs")
+    cli_command(args)
+        .env_remove("RUST_LOG")
+        .output()
+        .expect("sophon-cli runs")
 }
 
 pub fn run_cli_without_keys(args: &[&str]) -> Output {
