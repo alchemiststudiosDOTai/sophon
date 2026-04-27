@@ -77,5 +77,8 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Install ripgrep for tech debt checks
+        run: sudo apt-get update && sudo apt-get install -y ripgrep
+
       - name: Run hygiene checks
         run: just hygiene

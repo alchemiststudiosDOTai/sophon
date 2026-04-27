@@ -22,6 +22,18 @@ chrono = { version = "0.4", default-features = false, features = ["clock", "std"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
+[[test]]
+name = "search_service_integration"
+path = "tests/integration/search_service_test.rs"
+
+[[test]]
+name = "provider_registry_integration"
+path = "tests/integration/provider_registry_test.rs"
+
+[[test]]
+name = "cli_integration"
+path = "tests/integration/cli_test.rs"
+
 [dev-dependencies.cargo-husky]
 version = "1.5.0"
 default-features = false

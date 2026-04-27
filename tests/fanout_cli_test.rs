@@ -1,17 +1,14 @@
-use std::process::Command;
+#[path = "common/cli.rs"]
+mod cli;
 
 #[test]
 fn provider_all_without_config_exits_nonzero_with_no_provider_error() {
-    let output = Command::new(env!("CARGO_BIN_EXE_sophon-cli"))
-        .args(["rust", "--provider", "all"])
-        .env_remove("BRAVE_API_KEY")
-        .env_remove("EXA_API_KEY")
-        .current_dir(std::env::temp_dir())
-        .output()
-        .expect("sophon-cli runs");
+    let output = cli::run_cli_without_keys(&["rust", "--provider", "all"]);
 
     assert!(!output.status.success());
-    let stderr = String::from_utf8_lossy(&output.stderr);
+    cli::assert_stdout_empty(&output);
+
+    let stderr = cli::stderr_text(&output);
     assert!(
         stderr.contains("no configured providers"),
         "stderr did not contain no configured providers: {stderr}"
