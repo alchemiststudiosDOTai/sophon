@@ -32,6 +32,9 @@ mod tests {
             safe_search: Some(CliSafeSearch::Strict),
             country: Some("US".to_string()),
             language: Some("en".to_string()),
+            scrape: false,
+            scrape_limit: None,
+            scrape_timeout_seconds: None,
         };
 
         let query = build_search_query("rust search".to_string(), &args);

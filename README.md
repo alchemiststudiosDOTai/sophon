@@ -25,6 +25,10 @@ cargo run -- "rust programming" --provider exa
 # Query every provider enabled by environment variables
 cargo run -- "rust async trait" --provider all
 
+# After results, scrape each deduplicated result URL with headless Chrome (Spider).
+# --scrape-limit is pages per result URL seed, not a top-N search-result limit.
+cargo run -- "rust crates" --scrape --scrape-limit 5 --scrape-timeout-seconds 60
+
 # Show package info
 cargo run -- --about
 
