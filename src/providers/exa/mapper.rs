@@ -1,5 +1,6 @@
-use crate::domain::result::{NewsResult, SearchResponse, SearchResult, WebResult};
-use crate::providers::exa::dto::{ExaResult, ExaSearchResponse};
+use crate::domain::{NewsResult, SearchResponse, SearchResult, WebResult};
+
+use super::dto::{ExaResult, ExaSearchResponse};
 
 /// Maximum characters for `snippet` shown in the CLI (after join / trim).
 const SNIPPET_DISPLAY_MAX_CHARS: usize = 500;
@@ -89,8 +90,9 @@ fn cap_snippet_chars(s: &str, max_chars: usize) -> String {
 #[cfg(test)]
 mod tests {
     use super::map_news_response;
-    use crate::domain::result::SearchResult;
-    use crate::providers::exa::dto::{ExaResult, ExaSearchResponse};
+    use crate::domain::SearchResult;
+
+    use super::super::dto::{ExaResult, ExaSearchResponse};
 
     fn sample_result() -> ExaResult {
         ExaResult {

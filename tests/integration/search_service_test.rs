@@ -1,11 +1,10 @@
 use async_trait::async_trait;
 use sophon_cli::app::fanout_search_service::FanoutSearchService;
 use sophon_cli::app::search_service::SearchService;
-use sophon_cli::domain::error::SearchError;
-use sophon_cli::domain::provider::{ProviderCapabilities, SearchProvider};
-use sophon_cli::domain::query::SearchQuery;
-use sophon_cli::domain::result::{SearchResponse, SearchResult, WebResult};
-use sophon_cli::domain::types::SearchType;
+use sophon_cli::domain::{
+    ProviderCapabilities, SearchError, SearchProvider, SearchQuery, SearchResponse, SearchResult,
+    SearchType, WebResult,
+};
 use std::sync::{Arc, Mutex};
 
 #[derive(Clone)]

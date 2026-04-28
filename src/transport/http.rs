@@ -1,7 +1,8 @@
-use crate::domain::error::SearchError;
 use async_trait::async_trait;
 use reqwest::{Client, Response};
 use serde::Serialize;
+
+use crate::domain::SearchError;
 
 #[async_trait]
 pub trait HttpClient: Send + Sync {

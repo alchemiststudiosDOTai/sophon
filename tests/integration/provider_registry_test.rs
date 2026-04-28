@@ -2,11 +2,9 @@ use async_trait::async_trait;
 use sophon_cli::bootstrap::provider_registry::{
     BuildSearchServiceError, ProviderBuilder, ProviderId, ProviderRegistry,
 };
-use sophon_cli::domain::error::SearchError;
-use sophon_cli::domain::provider::{ProviderCapabilities, SearchProvider};
-use sophon_cli::domain::query::SearchQuery;
-use sophon_cli::domain::result::SearchResponse;
-use sophon_cli::domain::types::SearchType;
+use sophon_cli::domain::{
+    ProviderCapabilities, SearchError, SearchProvider, SearchQuery, SearchResponse, SearchType,
+};
 use std::ffi::OsString;
 use std::sync::{Mutex, MutexGuard, OnceLock};
 

@@ -1,4 +1,4 @@
-use crate::domain::error::SearchError;
+use super::SearchError;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PageToken(pub String);
@@ -70,7 +70,6 @@ pub struct VideoResult {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::domain::error::SearchError;
 
     #[test]
     fn search_batch_response_can_hold_success_and_failure() {

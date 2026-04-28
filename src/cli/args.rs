@@ -1,5 +1,6 @@
-use crate::domain::types::SearchType;
 use clap::{Parser, ValueEnum};
+
+use crate::domain::{SafeSearch, SearchType};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
 pub enum CliSearchType {
@@ -27,12 +28,12 @@ pub enum CliSafeSearch {
     Strict,
 }
 
-impl From<CliSafeSearch> for crate::domain::types::SafeSearch {
+impl From<CliSafeSearch> for SafeSearch {
     fn from(val: CliSafeSearch) -> Self {
         match val {
-            CliSafeSearch::Off => crate::domain::types::SafeSearch::Off,
-            CliSafeSearch::Moderate => crate::domain::types::SafeSearch::Moderate,
-            CliSafeSearch::Strict => crate::domain::types::SafeSearch::Strict,
+            CliSafeSearch::Off => SafeSearch::Off,
+            CliSafeSearch::Moderate => SafeSearch::Moderate,
+            CliSafeSearch::Strict => SafeSearch::Strict,
         }
     }
 }

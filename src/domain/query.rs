@@ -1,4 +1,4 @@
-use crate::domain::types::*;
+use super::{SafeSearch, SearchType, TimeRange};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SearchQuery {

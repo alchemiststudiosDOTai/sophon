@@ -1,6 +1,6 @@
-use crate::domain::provider::SearchProvider;
-use crate::domain::query::SearchQuery;
-use crate::domain::result::{ProviderSearchFailure, SearchBatchResponse, SearchResponse};
+use crate::domain::{
+    ProviderSearchFailure, SearchBatchResponse, SearchProvider, SearchQuery, SearchResponse,
+};
 
 pub struct FanoutSearchService {
     providers: Vec<Box<dyn SearchProvider>>,
@@ -37,11 +37,9 @@ impl FanoutSearchService {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::domain::error::SearchError;
-    use crate::domain::provider::{ProviderCapabilities, SearchProvider};
-    use crate::domain::query::SearchQuery;
-    use crate::domain::result::SearchResponse;
-    use crate::domain::types::SearchType;
+    use crate::domain::{
+        ProviderCapabilities, SearchError, SearchProvider, SearchQuery, SearchResponse, SearchType,
+    };
     use async_trait::async_trait;
 
     enum MockOutcome {

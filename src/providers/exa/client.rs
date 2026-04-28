@@ -1,17 +1,18 @@
-use crate::domain::error::SearchError;
-use crate::domain::provider::{ProviderCapabilities, SearchProvider};
-use crate::domain::query::SearchQuery;
-use crate::domain::result::SearchResponse;
-use crate::domain::types::{SafeSearch, SearchType, TimeRange};
-use crate::providers::exa::config::ExaConfig;
-use crate::providers::exa::dto::{
+use async_trait::async_trait;
+use chrono::{Duration, Utc};
+
+use crate::domain::{
+    ProviderCapabilities, SafeSearch, SearchError, SearchProvider, SearchQuery, SearchResponse,
+    SearchType, TimeRange,
+};
+use crate::transport::http::HttpClient;
+
+use super::config::ExaConfig;
+use super::dto::{
     ExaContentsRequest, ExaHighlightsRequest, ExaSearchRequest, ExaSearchResponse,
     ExaSummaryRequest,
 };
-use crate::providers::exa::mapper::{map_news_response, map_web_response};
-use crate::transport::http::HttpClient;
-use async_trait::async_trait;
-use chrono::{Duration, Utc};
+use super::mapper::{map_news_response, map_web_response};
 
 /// Budget for Exa per-result highlights (API); mapper applies a shorter CLI-facing cap.
 const EXA_HIGHLIGHTS_MAX_CHARACTERS: u32 = 1200;
@@ -143,13 +144,11 @@ fn published_date_window(time_range: Option<&TimeRange>) -> (Option<String>, Opt
 
 #[cfg(test)]
 mod tests {
+    use super::super::config::ExaConfig;
     use super::ExaProvider;
-    use crate::domain::error::SearchError;
-    use crate::domain::provider::SearchProvider;
-    use crate::domain::query::SearchQuery;
-    use crate::domain::result::SearchResult;
-    use crate::domain::types::{SafeSearch, SearchType, TimeRange};
-    use crate::providers::exa::config::ExaConfig;
+    use crate::domain::{
+        SafeSearch, SearchError, SearchProvider, SearchQuery, SearchResult, SearchType, TimeRange,
+    };
     use crate::transport::http::HttpClient;
     use async_trait::async_trait;
     use serde::Serialize;
