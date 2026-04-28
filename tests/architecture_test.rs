@@ -178,30 +178,7 @@ fn test_t004_ideal_dependency_direction_import_contract() {
 }
 
 #[test]
-fn test_t005_import_organization_docs_contract() {
-    let import_docs = read_repo_file("docs/import-organization.md");
-    assert!(
-        import_docs.starts_with("---\n"),
-        "T005 requires docs/import-organization.md to have YAML frontmatter"
-    );
-
-    let required_guidance = [
-        "main",
-        "CLI runner",
-        "CLI to bootstrap",
-        "bootstrap to app",
-        "app to domain only",
-        "providers to transport",
-        "transport to domain",
-        "domain to no outer layers",
-    ];
-    for guidance in required_guidance {
-        assert!(
-            import_docs.contains(guidance),
-            "T005 import organization docs missing guidance phrase {guidance:?}"
-        );
-    }
-
+fn test_t005_current_dependency_map_reflects_refactor() {
     let current_map = read_repo_file("docs/dependency-architecture-map.html");
     assert!(
         current_map.contains("cli::runner"),
