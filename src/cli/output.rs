@@ -1,4 +1,4 @@
-use crate::domain::result::{SearchBatchResponse, SearchResponse, SearchResult};
+use crate::domain::{SearchBatchResponse, SearchResponse, SearchResult};
 
 pub fn render_text(response: &SearchResponse) -> String {
     let mut lines = vec![
@@ -73,8 +73,9 @@ pub fn render_fanout_text(response: &SearchBatchResponse) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::domain::error::SearchError;
-    use crate::domain::result::*;
+    use crate::domain::{
+        ImageResult, NewsResult, ProviderSearchFailure, SearchError, VideoResult, WebResult,
+    };
 
     #[test]
     fn test_render_text_mixed_results() {

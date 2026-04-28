@@ -1,7 +1,4 @@
-use crate::domain::error::SearchError;
-use crate::domain::provider::SearchProvider;
-use crate::domain::query::SearchQuery;
-use crate::domain::result::SearchResponse;
+use crate::domain::{SearchError, SearchProvider, SearchQuery, SearchResponse};
 
 pub struct SearchService {
     provider: Box<dyn SearchProvider>,
@@ -26,8 +23,7 @@ impl SearchService {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::domain::provider::ProviderCapabilities;
-    use crate::domain::types::SearchType;
+    use crate::domain::{ProviderCapabilities, SearchType};
     use async_trait::async_trait;
 
     struct MockProvider {

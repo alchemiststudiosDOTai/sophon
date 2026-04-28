@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>sophon-cli Dependency Direction</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #faf7f5;
+  --surface: #fffdfa;
+  --surface-soft: #f3ede8;
+  --surface-recessed: #ebe2da;
+  --text: #241a14;
+  --muted: #75685f;
+  --border: rgba(54, 37, 25, 0.13);
+  --accent: #c2410c;
+  --accent-soft: rgba(194, 65, 12, 0.10);
+  --blue: #1e3a5f;
+  --blue-soft: rgba(30, 58, 95, 0.10);
+  --teal: #0f766e;
+  --teal-soft: rgba(15, 118, 110, 0.10);
+  --sage: #4d7c0f;
+  --sage-soft: rgba(77, 124, 15, 0.11);
+  --gold: #b7791f;
+  --gold-soft: rgba(183, 121, 31, 0.12);
+  --rose: #9f1239;
+  --rose-soft: rgba(159, 18, 57, 0.10);
+  --shadow: 0 16px 45px rgba(60, 38, 24, 0.10);
+  --mono: 'IBM Plex Mono', 'SF Mono', Consolas, monospace;
+  --sans: 'IBM Plex Sans', system-ui, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #191412;
+    --surface: #24201d;
+    --surface-soft: #2e2824;
+    --surface-recessed: #1f1a18;
+    --text: #f4ece5;
+    --muted: #aa9b8d;
+    --border: rgba(255, 255, 255, 0.10);
+    --accent: #fb923c;
+    --accent-soft: rgba(251, 146, 60, 0.14);
+    --blue: #93c5fd;
+    --blue-soft: rgba(147, 197, 253, 0.12);
+    --teal: #5eead4;
+    --teal-soft: rgba(94, 234, 212, 0.12);
+    --sage: #bef264;
+    --sage-soft: rgba(190, 242, 100, 0.12);
+    --gold: #facc15;
+    --gold-soft: rgba(250, 204, 21, 0.12);
+    --rose: #fda4af;
+    --rose-soft: rgba(253, 164, 175, 0.13);
+    --shadow: 0 16px 45px rgba(0, 0, 0, 0.30);
+  }
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  color: var(--text);
+  font-family: var(--sans);
+  background:
+    radial-gradient(900px 520px at 8% -10%, var(--accent-soft), transparent 62%),
+    radial-gradient(760px 460px at 92% 0%, var(--teal-soft), transparent 58%),
+    linear-gradient(rgba(0,0,0,.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,.025) 1px, transparent 1px),
+    var(--bg);
+  background-size: auto, auto, 28px 28px, 28px 28px, auto;
+  padding: 38px 22px 70px;
+}
+
+.page { max-width: 1180px; margin: 0 auto; }
+.hero {
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  box-shadow: var(--shadow);
+  border-radius: 28px;
+  padding: clamp(28px, 4vw, 46px);
+}
+.kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--accent);
+  font: 700 12px/1 var(--mono);
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+.kicker::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); }
+h1 {
+  margin: 18px 0 16px;
+  max-width: 880px;
+  font-size: clamp(38px, 6vw, 72px);
+  line-height: .95;
+  letter-spacing: -0.055em;
+}
+.lead { max-width: 850px; color: var(--muted); font-size: 18px; line-height: 1.65; }
+code {
+  font-family: var(--mono);
+  font-size: .92em;
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1px 5px;
+}
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+}
+.nav a {
+  color: var(--text);
+  text-decoration: none;
+  font: 600 13px/1 var(--mono);
+  border: 1px solid var(--border);
+  background: var(--surface-soft);
+  padding: 10px 12px;
+  border-radius: 999px;
+}
+.section { margin-top: 26px; }
+.section-card {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 24px;
+  padding: clamp(22px, 3vw, 34px);
+  box-shadow: 0 8px 24px rgba(60, 38, 24, .055);
+}
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: end;
+  margin-bottom: 22px;
+}
+.section-label {
+  color: var(--accent);
+  font: 700 12px/1 var(--mono);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+h2 { margin: 0; font-size: clamp(26px, 3.4vw, 42px); line-height: 1; letter-spacing: -0.035em; }
+.section-copy { color: var(--muted); line-height: 1.55; max-width: 660px; margin: 0; }
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 8px 10px;
+  font: 600 12px/1 var(--mono);
+}
+.badge::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+.badge.blue::before { background: var(--blue); }
+.badge.teal::before { background: var(--teal); }
+.badge.sage::before { background: var(--sage); }
+.badge.gold::before { background: var(--gold); }
+.badge.rose::before { background: var(--rose); }
+
+.root-box {
+  border: 2px solid var(--accent);
+  background: var(--accent-soft);
+  border-radius: 22px;
+  padding: 22px;
+  text-align: center;
+  margin-bottom: 18px;
+}
+.root-box strong { display: block; font-size: 24px; letter-spacing: -0.02em; }
+.root-box span { display: block; color: var(--muted); font: 500 13px/1.5 var(--mono); margin-top: 6px; }
+.arrow-note {
+  text-align: center;
+  color: var(--muted);
+  font: 600 12px/1 var(--mono);
+  margin: 10px 0 18px;
+}
+.arrow-note::before, .arrow-note::after { content: "↓"; color: var(--accent); margin: 0 10px; }
+.dep-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+.dep-group {
+  min-width: 0;
+  border: 1px solid var(--border);
+  background: var(--surface-soft);
+  border-radius: 18px;
+  padding: 16px;
+}
+.dep-group.runtime { background: var(--teal-soft); border-color: color-mix(in srgb, var(--teal) 30%, var(--border)); }
+.dep-group.data { background: var(--sage-soft); border-color: color-mix(in srgb, var(--sage) 30%, var(--border)); }
+.dep-group.interface { background: var(--blue-soft); border-color: color-mix(in srgb, var(--blue) 30%, var(--border)); }
+.dep-group.support { background: var(--gold-soft); border-color: color-mix(in srgb, var(--gold) 30%, var(--border)); }
+.dep-group.dev { background: var(--rose-soft); border-color: color-mix(in srgb, var(--rose) 30%, var(--border)); }
+.dep-group h3 { margin: 0 0 10px; font-size: 15px; letter-spacing: .01em; }
+.dep-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.dep-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: baseline;
+  background: color-mix(in srgb, var(--surface) 72%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px;
+}
+.dep-list b { font-family: var(--mono); font-size: 13px; }
+.dep-list span { color: var(--muted); font-size: 12px; text-align: right; }
+
+.layer-stack { display: grid; gap: 12px; margin-top: 22px; }
+.layer {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 18px;
+  align-items: stretch;
+}
+.layer-name {
+  border-radius: 18px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  background: var(--surface-soft);
+}
+.layer-name strong { display: block; font-size: 20px; letter-spacing: -0.02em; }
+.layer-name span { display: block; color: var(--muted); font: 500 12px/1.4 var(--mono); margin-top: 6px; }
+.layer-detail {
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
+  border-radius: 18px;
+  padding: 16px 18px;
+  display: grid;
+  align-content: center;
+  gap: 8px;
+}
+.layer-detail p { margin: 0; color: var(--muted); line-height: 1.45; }
+.layer-detail .files { display: flex; flex-wrap: wrap; gap: 7px; }
+.file-pill { font: 600 12px/1 var(--mono); border: 1px solid var(--border); background: var(--surface-soft); border-radius: 999px; padding: 7px 9px; color: var(--text); }
+.down {
+  text-align: center;
+  color: var(--accent);
+  font: 700 15px/1 var(--mono);
+  margin: -2px 0;
+}
+.layer.top .layer-name { background: var(--accent-soft); border-color: color-mix(in srgb, var(--accent) 35%, var(--border)); }
+.layer.compose .layer-name { background: var(--gold-soft); border-color: color-mix(in srgb, var(--gold) 35%, var(--border)); }
+.layer.runtime .layer-name { background: var(--teal-soft); border-color: color-mix(in srgb, var(--teal) 35%, var(--border)); }
+.layer.adapters .layer-name { background: var(--sage-soft); border-color: color-mix(in srgb, var(--sage) 35%, var(--border)); }
+.layer.bottom .layer-name { background: var(--rose-soft); border-color: color-mix(in srgb, var(--rose) 35%, var(--border)); }
+
+.callout-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 18px; }
+.callout {
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface-soft);
+  padding: 16px;
+}
+.callout b { display: block; margin-bottom: 6px; }
+.callout p { margin: 0; color: var(--muted); line-height: 1.45; font-size: 14px; }
+.commands { display: grid; gap: 12px; margin-top: 18px; }
+.command {
+  background: #15110f;
+  color: #f6e7d8;
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 16px;
+  padding: 16px 18px;
+  overflow-x: auto;
+  font: 500 13px/1.7 var(--mono);
+}
+.command small { color: #d2bda8; display: block; margin-top: 6px; }
+@media (max-width: 980px) {
+  .dep-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .section-head { display: block; }
+  .section-copy { margin-top: 12px; }
+}
+@media (max-width: 680px) {
+  body { padding: 20px 12px 44px; }
+  .dep-grid, .callout-grid { grid-template-columns: 1fr; }
+  .layer { grid-template-columns: 1fr; gap: 8px; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="hero">
+    <div class="kicker">sophon-cli dependency direction</div>
+    <h1>Small maps beat giant hairballs.</h1>
+    <p class="lead">
+      <code>cargo visualize --all-deps</code> shows every transitive dependency. That is useful for audits, but noisy for orientation.
+      This page keeps only the two maps maintainers usually need: direct external crates and internal module direction.
+    </p>
+    <nav class="nav" aria-label="Page sections">
+      <a href="#external">External crates</a>
+      <a href="#internal">Internal layers</a>
+      <a href="#commands">Commands</a>
+    </nav>
+  </header>
+
+  <main>
+    <section id="external" class="section section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-label">Map 1</div>
+          <h2>Direct Cargo dependencies</h2>
+        </div>
+        <p class="section-copy">
+          Read this as: <strong>sophon-cli depends on each crate below</strong>. Transitive crates are intentionally hidden.
+        </p>
+      </div>
+
+      <div class="root-box">
+        <strong>sophon-cli</strong>
+        <span>package root from Cargo.toml</span>
+      </div>
+      <div class="arrow-note">direct dependency direction</div>
+
+      <div class="dep-grid">
+        <article class="dep-group runtime">
+          <h3>Runtime + HTTP</h3>
+          <ul class="dep-list">
+            <li><b>tokio</b><span>async runtime</span></li>
+            <li><b>reqwest</b><span>HTTP client</span></li>
+          </ul>
+        </article>
+
+        <article class="dep-group data">
+          <h3>Data encoding</h3>
+          <ul class="dep-list">
+            <li><b>serde</b><span>derive + DTOs</span></li>
+            <li><b>serde_json</b><span>JSON body/value</span></li>
+            <li><b>chrono</b><span>timestamps</span></li>
+          </ul>
+        </article>
+
+        <article class="dep-group interface">
+          <h3>CLI interface</h3>
+          <ul class="dep-list">
+            <li><b>clap</b><span>argument parser</span></li>
+            <li><b>dotenvy</b><span>.env loading</span></li>
+          </ul>
+        </article>
+
+        <article class="dep-group support">
+          <h3>Errors + traits</h3>
+          <ul class="dep-list">
+            <li><b>thiserror</b><span>error enums</span></li>
+            <li><b>async-trait</b><span>async provider trait</span></li>
+          </ul>
+        </article>
+
+        <article class="dep-group support">
+          <h3>Observability</h3>
+          <ul class="dep-list">
+            <li><b>tracing</b><span>structured spans</span></li>
+            <li><b>tracing-subscriber</b><span>stderr logging</span></li>
+          </ul>
+        </article>
+
+        <article class="dep-group dev">
+          <h3>Dev-only</h3>
+          <ul class="dep-list">
+            <li><b>cargo-husky</b><span>local hooks</span></li>
+          </ul>
+        </article>
+      </div>
+
+      <div class="legend">
+        <span class="badge teal">runtime/http</span>
+        <span class="badge sage">data</span>
+        <span class="badge blue">CLI</span>
+        <span class="badge gold">support</span>
+        <span class="badge rose">dev-only</span>
+      </div>
+    </section>
+
+    <section id="internal" class="section section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-label">Map 2</div>
+          <h2>Internal layer direction</h2>
+        </div>
+        <p class="section-copy">
+          Read this top-to-bottom: upper code may depend on lower code. Lower layers should not import upward.
+        </p>
+      </div>
+
+      <div class="layer-stack">
+        <article class="layer top">
+          <div class="layer-name"><strong>Entry + CLI</strong><span>outermost user surface</span></div>
+          <div class="layer-detail">
+            <div class="files"><span class="file-pill">src/main.rs</span><span class="file-pill">src/cli/args.rs</span><span class="file-pill">src/cli/output.rs</span><span class="file-pill">src/single_provider_search.rs</span></div>
+            <p>Parses CLI flags, maps them into domain queries, and prints rendered output.</p>
+          </div>
+        </article>
+        <div class="down">depends on ↓</div>
+
+        <article class="layer compose">
+          <div class="layer-name"><strong>Bootstrap</strong><span>composition root</span></div>
+          <div class="layer-detail">
+            <div class="files"><span class="file-pill">src/bootstrap/provider_registry.rs</span></div>
+            <p>Reads provider configuration and wires provider adapters to the HTTP transport.</p>
+          </div>
+        </article>
+        <div class="down">depends on ↓</div>
+
+        <article class="layer runtime">
+          <div class="layer-name"><strong>Application</strong><span>orchestration only</span></div>
+          <div class="layer-detail">
+            <div class="files"><span class="file-pill">src/app/search_service.rs</span><span class="file-pill">src/app/fanout_search_service.rs</span></div>
+            <p>Coordinates one provider or all enabled providers through domain traits.</p>
+          </div>
+        </article>
+        <div class="down">depends on ↓</div>
+
+        <article class="layer adapters">
+          <div class="layer-name"><strong>Adapters</strong><span>provider + transport edge</span></div>
+          <div class="layer-detail">
+            <div class="files"><span class="file-pill">src/providers/brave/*</span><span class="file-pill">src/providers/exa/*</span><span class="file-pill">src/transport/http.rs</span></div>
+            <p>Turns provider-specific HTTP/JSON details into provider-agnostic domain results.</p>
+          </div>
+        </article>
+        <div class="down">depends on ↓</div>
+
+        <article class="layer bottom">
+          <div class="layer-name"><strong>Domain</strong><span>bottom, pure contracts</span></div>
+          <div class="layer-detail">
+            <div class="files"><span class="file-pill">src/domain/query.rs</span><span class="file-pill">src/domain/result.rs</span><span class="file-pill">src/domain/provider.rs</span><span class="file-pill">src/domain/error.rs</span></div>
+            <p>Provider-agnostic types, errors, and traits. This layer must not know about CLI, providers, app, or transport.</p>
+          </div>
+        </article>
+      </div>
+
+      <div class="callout-grid">
+        <div class="callout"><b>Allowed</b><p><code>providers</code> can import <code>domain</code> to implement <code>SearchProvider</code>.</p></div>
+        <div class="callout"><b>Forbidden</b><p><code>domain</code> should not import <code>providers</code>, <code>transport</code>, <code>app</code>, or <code>cli</code>.</p></div>
+        <div class="callout"><b>Enforced by</b><p><code>tests/architecture_test.rs</code> scans source files for boundary leaks.</p></div>
+      </div>
+    </section>
+
+    <section id="commands" class="section section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-label">Practical commands</div>
+          <h2>Use smaller graph commands</h2>
+        </div>
+        <p class="section-copy">These commands keep the visualization oriented around the question you are asking.</p>
+      </div>
+      <div class="commands">
+        <div class="command">cargo tree --depth 1<small>Terminal-only view of direct dependencies.</small></div>
+        <div class="command">cargo visualize --depth 1 --dedup-transitive-deps<small>Small browser graph: direct dependencies only.</small></div>
+        <div class="command">cargo visualize --focus reqwest --depth 2 --dedup-transitive-deps<small>Focused browser graph: why one crate is present and what it pulls nearby.</small></div>
+        <div class="command">cargo tree --invert tokio<small>Reverse question: who depends on this crate?</small></div>
+      </div>
+    </section>
+  </main>
+</div>
+</body>
+</html>

@@ -1,5 +1,8 @@
-use crate::domain::result::*;
-use crate::providers::brave::dto::*;
+use crate::domain::{
+    ImageResult, NewsResult, SearchResponse, SearchResult, VideoResult, WebResult,
+};
+
+use super::dto::{BraveImagesResponse, BraveNewsResponse, BraveVideosResponse, BraveWebResponse};
 
 pub fn map_web_response(dto: BraveWebResponse) -> SearchResponse {
     let query_text = dto.query.and_then(|q| q.original).unwrap_or_default();
@@ -94,6 +97,11 @@ pub fn map_videos_response(dto: BraveVideosResponse) -> SearchResponse {
 
 #[cfg(test)]
 mod tests {
+    use super::super::dto::{
+        BraveImageResult, BraveImagesResponse, BraveNewsResponse, BraveNewsResult,
+        BraveNewsResults, BraveQuery, BraveThumbnail, BraveVideoResult, BraveVideosResponse,
+        BraveVideosResults, BraveWebResponse, BraveWebResult, BraveWebResults,
+    };
     use super::*;
 
     #[test]

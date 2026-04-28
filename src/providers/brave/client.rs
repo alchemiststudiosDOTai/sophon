@@ -1,13 +1,16 @@
-use crate::domain::error::SearchError;
-use crate::domain::provider::{ProviderCapabilities, SearchProvider};
-use crate::domain::query::SearchQuery;
-use crate::domain::result::SearchResponse;
-use crate::domain::types::SearchType;
-use crate::providers::brave::config::BraveConfig;
-use crate::providers::brave::dto::*;
-use crate::providers::brave::mapper::*;
-use crate::transport::http::HttpClient;
 use async_trait::async_trait;
+
+use crate::domain::{
+    ProviderCapabilities, SafeSearch, SearchError, SearchProvider, SearchQuery, SearchResponse,
+    SearchType, TimeRange,
+};
+use crate::transport::http::HttpClient;
+
+use super::config::BraveConfig;
+use super::dto::{BraveImagesResponse, BraveNewsResponse, BraveVideosResponse, BraveWebResponse};
+use super::mapper::{
+    map_images_response, map_news_response, map_videos_response, map_web_response,
+};
 
 pub struct BraveProvider<C: HttpClient> {
     client: C,
@@ -57,9 +60,9 @@ impl<C: HttpClient> SearchProvider for BraveProvider<C> {
         }
         if let Some(ss) = query.safe_search {
             let val = match ss {
-                crate::domain::types::SafeSearch::Off => "off",
-                crate::domain::types::SafeSearch::Moderate => "moderate",
-                crate::domain::types::SafeSearch::Strict => "strict",
+                SafeSearch::Off => "off",
+                SafeSearch::Moderate => "moderate",
+                SafeSearch::Strict => "strict",
             };
             params.push(("safesearch".to_string(), val.to_string()));
         }
@@ -71,10 +74,10 @@ impl<C: HttpClient> SearchProvider for BraveProvider<C> {
         }
         if let Some(ref tr) = query.time_range {
             let val = match tr {
-                crate::domain::types::TimeRange::Day => "day",
-                crate::domain::types::TimeRange::Week => "week",
-                crate::domain::types::TimeRange::Month => "month",
-                crate::domain::types::TimeRange::Year => "year",
+                TimeRange::Day => "day",
+                TimeRange::Week => "week",
+                TimeRange::Month => "month",
+                TimeRange::Year => "year",
             };
             params.push(("freshness".to_string(), val.to_string()));
         }
@@ -111,7 +114,7 @@ impl<C: HttpClient> SearchProvider for BraveProvider<C> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::domain::types::{SafeSearch, SearchType};
+    use crate::domain::SearchResult;
     use crate::transport::http::HttpClient;
     use async_trait::async_trait;
     use serde::Serialize;
@@ -188,7 +191,7 @@ mod tests {
         assert_eq!(resp.total_estimated, Some(100));
         assert_eq!(resp.results.len(), 1);
         match &resp.results[0] {
-            crate::domain::result::SearchResult::Web(r) => {
+            SearchResult::Web(r) => {
                 assert_eq!(r.title, "Rust");
                 assert_eq!(r.url, "https://rust-lang.org");
             }

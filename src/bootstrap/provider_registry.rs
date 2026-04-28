@@ -1,13 +1,12 @@
 use std::collections::HashMap;
 use std::fmt;
 
-use crate::app::fanout_search_service::FanoutSearchService;
-use crate::app::search_service::SearchService;
-use crate::domain::provider::SearchProvider;
-use crate::providers::brave::client::BraveProvider;
-use crate::providers::brave::config::BraveConfig;
-use crate::providers::exa::client::ExaProvider;
-use crate::providers::exa::config::ExaConfig;
+use crate::app::{fanout_search_service::FanoutSearchService, search_service::SearchService};
+use crate::domain::SearchProvider;
+use crate::providers::{
+    brave::{client::BraveProvider, config::BraveConfig},
+    exa::{client::ExaProvider, config::ExaConfig},
+};
 use crate::transport::http::ReqwestHttpClient;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -125,11 +124,9 @@ impl ProviderRegistry {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::domain::error::SearchError;
-    use crate::domain::provider::ProviderCapabilities;
-    use crate::domain::query::SearchQuery;
-    use crate::domain::result::SearchResponse;
-    use crate::domain::types::SearchType;
+    use crate::domain::{
+        ProviderCapabilities, SearchError, SearchQuery, SearchResponse, SearchType,
+    };
     use async_trait::async_trait;
     use std::ffi::OsString;
     use std::sync::{Mutex, OnceLock};

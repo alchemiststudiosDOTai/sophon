@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>sophon-cli Ideal Dependency Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#07111f;--panel:#0f1b2d;--panel2:#13243a;--ink:#eaf2ff;--muted:#94a9c2;--line:#25405f;--entry:#f59e0b;--cli:#38bdf8;--boot:#fb923c;--app:#34d399;--adapter:#a78bfa;--domain:#fb7185;--good:#22c55e;--warn:#f59e0b;--mono:'JetBrains Mono',monospace;--sans:Inter,system-ui,sans-serif}*{box-sizing:border-box}body{margin:0;padding:28px;background:radial-gradient(900px 520px at 15% -10%,rgba(56,189,248,.2),transparent 58%),radial-gradient(900px 520px at 90% 0%,rgba(251,113,133,.16),transparent 60%),linear-gradient(180deg,#07111f,#0b1020);color:var(--ink);font-family:var(--sans)}.page{max-width:1500px;margin:0 auto}.hero{border:1px solid rgba(148,163,184,.18);background:rgba(15,27,45,.8);border-radius:28px;padding:34px 38px;box-shadow:0 24px 80px rgba(0,0,0,.35);margin-bottom:20px}.kicker{color:var(--good);font:800 12px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase}.kicker:before{content:'●';margin-right:10px}h1{font-size:clamp(42px,6vw,78px);line-height:.92;letter-spacing:-.06em;margin:16px 0 12px}.lead{max-width:920px;color:var(--muted);font-size:18px;line-height:1.65;margin:0}.links{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}.links a,.pill{color:#c7ddff;text-decoration:none;border:1px solid rgba(148,163,184,.22);border-radius:999px;background:rgba(30,41,59,.7);padding:9px 12px;font:700 12px/1 var(--mono)}.map-shell{border:1px solid rgba(148,163,184,.18);background:rgba(15,27,45,.78);border-radius:28px;box-shadow:0 24px 80px rgba(0,0,0,.32);overflow:hidden}.map-head{display:flex;justify-content:space-between;gap:18px;align-items:center;padding:16px 22px;border-bottom:1px solid rgba(148,163,184,.18);background:rgba(19,36,58,.76)}.map-head strong{font-size:18px}.map-head span{color:var(--muted);font:700 12px/1 var(--mono)}.map-scroll{overflow:auto;padding:18px}.canvas{min-width:1360px;height:930px;border:1px solid rgba(148,163,184,.14);border-radius:22px;background:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px),#0a1525;background-size:32px 32px;position:relative}svg{position:absolute;inset:0;width:100%;height:100%}.band{position:absolute;left:18px;right:18px;border:1px dashed rgba(148,163,184,.18);border-radius:18px;background:rgba(255,255,255,.015)}.band label{position:absolute;left:14px;top:10px;font:800 11px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase}.b1{top:18px;height:110px}.b2{top:148px;height:125px}.b3{top:293px;height:125px}.b4{top:438px;height:125px}.b5{top:583px;height:145px}.b6{top:748px;height:160px}.b1 label{color:var(--entry)}.b2 label{color:var(--cli)}.b3 label{color:var(--boot)}.b4 label{color:var(--app)}.b5 label{color:var(--adapter)}.b6 label{color:var(--domain)}.node{position:absolute;width:210px;min-height:82px;border-radius:18px;border:2px solid var(--c);background:linear-gradient(180deg,color-mix(in srgb,var(--c) 20%,#0f1b2d),rgba(15,27,45,.95));padding:15px;box-shadow:0 16px 30px rgba(0,0,0,.28);z-index:2}.node strong{display:block;font-size:16px;margin-bottom:7px}.node small{display:block;color:var(--muted);font:600 11px/1.42 var(--mono)}.entry{--c:var(--entry)}.cli{--c:var(--cli)}.boot{--c:var(--boot)}.app{--c:var(--app)}.adapter{--c:var(--adapter)}.domain{--c:var(--domain)}.edge{fill:none;stroke:#8fb3d9;stroke-width:2.5;opacity:.85}.edge.main{stroke:var(--good);stroke-width:3.5}.edge.soft{stroke-dasharray:8 7;opacity:.62}.label{font:800 11px/1 var(--mono);fill:#b7c9df;paint-order:stroke;stroke:#0a1525;stroke-width:5}.section{margin-top:20px;border:1px solid rgba(148,163,184,.18);background:rgba(15,27,45,.78);border-radius:24px;padding:24px}.section h2{margin:0 0 14px;font-size:34px;letter-spacing:-.04em}.rules{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.rule{border:1px solid rgba(148,163,184,.18);border-radius:18px;background:rgba(19,36,58,.72);padding:17px}.rule b{display:block;margin-bottom:8px}.rule p{margin:0;color:var(--muted);line-height:1.5;font-size:14px}code{font-family:var(--mono);font-size:.9em;background:#081321;border:1px solid rgba(148,163,184,.18);border-radius:6px;padding:1px 5px}@media(max-width:900px){body{padding:14px}.map-head{display:block}.map-head span{display:block;margin-top:8px}.rules{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="page">
+<header class="hero">
+  <div class="kicker">ideal node-and-arrow map</div>
+  <h1>Ideal dependency architecture map.</h1>
+  <p class="lead">This is the target shape as an actual map: boxes are architecture responsibilities, arrows are allowed source-code dependency direction. Everything routes downward into the domain core.</p>
+  <div class="links"><span class="pill">arrow = importer depends on target</span><span class="pill">green arrows = ideal main flow</span><a href="dependency-architecture-map.html">compare current map →</a></div>
+</header>
+
+<section class="map-shell">
+<div class="map-head"><strong>Ideal map</strong><span>clean target: composition owns concretes, app owns orchestration, domain owns contracts</span></div>
+<div class="map-scroll"><div class="canvas">
+  <div class="band b1"><label>entry</label></div><div class="band b2"><label>user surface</label></div><div class="band b3"><label>composition root</label></div><div class="band b4"><label>application</label></div><div class="band b5"><label>adapters</label></div><div class="band b6"><label>domain core</label></div>
+  <svg viewBox="0 0 1360 930" aria-hidden="true">
+    <defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="currentColor"/></marker></defs>
+    <g style="color:#22c55e">
+      <path class="edge main" marker-end="url(#arrow)" d="M680 103 L680 160"/>
+      <path class="edge main" marker-end="url(#arrow)" d="M680 248 L680 305"/>
+      <path class="edge main" marker-end="url(#arrow)" d="M680 393 L680 450"/>
+      <path class="edge main" marker-end="url(#arrow)" d="M680 538 L680 598"/>
+      <path class="edge main" marker-end="url(#arrow)" d="M680 702 L680 765"/>
+    </g>
+    <g style="color:#8fb3d9">
+      <path class="edge" marker-end="url(#arrow)" d="M575 205 H305 V765"/>
+      <path class="edge" marker-end="url(#arrow)" d="M785 205 H1055 V765"/>
+      <path class="edge" marker-end="url(#arrow)" d="M575 350 H405 V598"/>
+      <path class="edge" marker-end="url(#arrow)" d="M785 350 H955 V598"/>
+      <path class="edge" marker-end="url(#arrow)" d="M575 495 H305 V765"/>
+      <path class="edge" marker-end="url(#arrow)" d="M785 495 H1055 V765"/>
+      <path class="edge soft" marker-end="url(#arrow)" d="M405 675 H955"/>
+    </g>
+    <text class="label" x="700" y="137">main delegates downward</text>
+    <text class="label" x="726" y="285">bootstrap wires concretes</text>
+    <text class="label" x="716" y="575">adapters implement domain contracts</text>
+    <text class="label" x="550" y="690">providers use transport</text>
+  </svg>
+
+  <div class="node entry" style="left:575px;top:38px"><strong>Entrypoint</strong><small>start program, delegate, handle exit</small></div>
+  <div class="node cli" style="left:575px;top:180px"><strong>CLI Surface</strong><small>parse input + render output; domain vocabulary only</small></div>
+  <div class="node boot" style="left:575px;top:325px"><strong>Bootstrap</strong><small>single composition root for provider + transport wiring</small></div>
+  <div class="node app" style="left:575px;top:470px"><strong>Application Services</strong><small>orchestrate SearchProvider trait objects</small></div>
+  <div class="node adapter" style="left:300px;top:620px"><strong>Provider Adapters</strong><small>Brave / Exa clients, DTOs, mappers, configs</small></div>
+  <div class="node adapter" style="left:850px;top:620px"><strong>Transport Adapter</strong><small>HTTP trait + reqwest implementation</small></div>
+  <div class="node domain" style="left:200px;top:790px"><strong>Domain Types</strong><small>SearchQuery, SearchResponse, result model</small></div>
+  <div class="node domain" style="left:575px;top:790px"><strong>Domain Traits</strong><small>SearchProvider + ProviderCapabilities</small></div>
+  <div class="node domain" style="left:950px;top:790px"><strong>Domain Errors / Enums</strong><small>SearchError, SearchType, SafeSearch, TimeRange</small></div>
+</div></div>
+</section>
+
+<section class="section"><h2>Ideal import rules shown by the map</h2><div class="rules">
+  <div class="rule"><b>App sees traits, not providers</b><p><code>app</code> imports <code>SearchProvider</code>, not <code>BraveProvider</code> or <code>ExaProvider</code>.</p></div>
+  <div class="rule"><b>Bootstrap sees concretes</b><p><code>bootstrap</code> is allowed to import app services, providers, transport, and domain.</p></div>
+  <div class="rule"><b>Domain has no upward arrows</b><p>The core imports no CLI, app, provider, or transport modules.</p></div>
+</div></section>
+</div>
+</body>
+</html>

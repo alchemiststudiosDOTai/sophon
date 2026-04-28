@@ -1,7 +1,6 @@
-use crate::domain::error::SearchError;
-use crate::domain::query::SearchQuery;
-use crate::domain::result::SearchResponse;
 use async_trait::async_trait;
+
+use super::{SearchError, SearchQuery, SearchResponse};
 
 #[derive(Debug, Clone, Default)]
 #[allow(dead_code)]
