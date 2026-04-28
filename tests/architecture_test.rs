@@ -160,27 +160,13 @@ fn test_t003_entrypoint_import_contract() {
 }
 
 #[test]
+fn test_entrypoint_delegates_only_to_cli_surface() {
+    assert_entrypoint_delegates_only_to_cli_surface();
+}
+
+#[test]
 fn test_t004_ideal_dependency_direction_import_contract() {
-    let main = read_repo_file("src/main.rs");
-    let forbidden_entrypoint_patterns = [
-        "sophon_cli::bootstrap::",
-        "sophon_cli::domain::",
-        "sophon_cli::cli::output",
-        "mod single_provider_search",
-        "single_provider_search::",
-    ];
-
-    for pattern in forbidden_entrypoint_patterns {
-        assert!(
-            !main.contains(pattern),
-            "T004 requires the entrypoint to delegate only to the CLI surface; found {pattern:?}"
-        );
-    }
-
-    assert!(
-        !Path::new("src/single_provider_search.rs").exists(),
-        "T004 requires the binary-private single_provider_search helper to be absent"
-    );
+    assert_entrypoint_delegates_only_to_cli_surface();
 
     let forbidden_app_patterns = [
         "use crate::cli::",
@@ -224,6 +210,29 @@ fn test_t005_import_organization_docs_contract() {
     assert!(
         !current_map.contains("single_provider_search"),
         "T005 current dependency map should no longer mention single_provider_search"
+    );
+}
+
+fn assert_entrypoint_delegates_only_to_cli_surface() {
+    let main = read_repo_file("src/main.rs");
+    let forbidden_entrypoint_patterns = [
+        "sophon_cli::bootstrap::",
+        "sophon_cli::domain::",
+        "sophon_cli::cli::output",
+        "mod single_provider_search",
+        "single_provider_search::",
+    ];
+
+    for pattern in forbidden_entrypoint_patterns {
+        assert!(
+            !main.contains(pattern),
+            "T004 requires the entrypoint to delegate only to the CLI surface; found {pattern:?}"
+        );
+    }
+
+    assert!(
+        !Path::new("src/single_provider_search.rs").exists(),
+        "T004 requires the binary-private single_provider_search helper to be absent"
     );
 }
 
