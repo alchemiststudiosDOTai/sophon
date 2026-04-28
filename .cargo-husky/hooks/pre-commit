@@ -1,0 +1,11 @@
+#!/bin/sh
+#
+# Pre-commit hook installed by cargo-husky.
+# Runs fast quality checks before every commit.
+set -e
+
+echo "[pre-commit] Running cargo fmt --check"
+cargo fmt --check
+
+echo "[pre-commit] Running cargo clippy"
+cargo clippy -- -D warnings -W clippy::complexity -W clippy::cognitive_complexity

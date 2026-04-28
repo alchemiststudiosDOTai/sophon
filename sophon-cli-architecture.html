@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>sophon-cli Architecture Diagram</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'JetBrains Mono', monospace;
+      background: #020617;
+      min-height: 100vh;
+      padding: 2rem;
+      color: white;
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    .header { margin-bottom: 2rem; }
+    .header-row { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+    .pulse-dot {
+      width: 12px; height: 12px; background: #22d3ee; border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.025em; }
+    .subtitle { color: #94a3b8; font-size: 0.875rem; margin-left: 1.75rem; }
+    .diagram-container {
+      background: rgba(15, 23, 42, 0.5); border-radius: 1rem; border: 1px solid #1e293b;
+      padding: 1.5rem; overflow-x: auto;
+    }
+    svg { width: 100%; min-width: 900px; display: block; }
+    .cards {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem; margin-top: 2rem;
+    }
+    .card {
+      background: rgba(15, 23, 42, 0.5); border-radius: 0.75rem;
+      border: 1px solid #1e293b; padding: 1.25rem;
+    }
+    .card-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
+    .card-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .card-dot.cyan { background: #22d3ee; }
+    .card-dot.emerald { background: #34d399; }
+    .card-dot.amber { background: #fbbf24; }
+    .card h3 { font-size: 0.875rem; font-weight: 600; }
+    .card ul { list-style: none; color: #94a3b8; font-size: 0.75rem; }
+    .card li { margin-bottom: 0.375rem; }
+    .footer { text-align: center; margin-top: 1.5rem; color: #475569; font-size: 0.75rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-row">
+        <div class="pulse-dot"></div>
+        <h1>sophon-cli Architecture</h1>
+      </div>
+      <p class="subtitle">Module map and data flow from main.rs through the provider-agnostic search pipeline</p>
+    </div>
+
+    <div class="diagram-container">
+      <svg viewBox="0 0 1000 820">
+        <defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#64748b" />
+          </marker>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+
+        <!-- Background Grid -->
+        <rect width="100%" height="100%" fill="url(#grid)" />
+
+        <!-- ==================== ARROWS ==================== -->
+        <!-- Terminal -> CliArgs -->
+        <line x1="160" y1="135" x2="216" y2="135" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <text x="188" y="129" fill="#94a3b8" font-size="9" text-anchor="middle">args</text>
+
+        <!-- CliArgs -> main.rs -->
+        <line x1="360" y1="135" x2="416" y2="135" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <text x="388" y="129" fill="#94a3b8" font-size="9" text-anchor="middle">parse</text>
+
+        <!-- main.rs -> ProviderRegistry -->
+        <line x1="520" y1="165" x2="520" y2="208" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <text x="555" y="190" fill="#94a3b8" font-size="8" text-anchor="middle">query + limit</text>
+
+        <!-- ProviderRegistry -> SearchService -->
+        <line x1="480" y1="260" x2="420" y2="308" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <text x="438" y="290" fill="#94a3b8" font-size="8" text-anchor="middle">build</text>
+
+        <!-- ProviderRegistry -> FanoutSearchService -->
+        <line x1="560" y1="260" x2="630" y2="308" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <text x="605" y="290" fill="#94a3b8" font-size="8" text-anchor="middle">build</text>
+
+        <!-- SearchService -> Domain -->
+        <line x1="420" y1="360" x2="420" y2="408" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <text x="445" y="390" fill="#94a3b8" font-size="8" text-anchor="middle">search()</text>
+
+        <!-- FanoutSearchService -> Domain -->
+        <line x1="630" y1="360" x2="630" y2="408" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <text x="665" y="390" fill="#94a3b8" font-size="8" text-anchor="middle">search_all()</text>
+
+        <!-- Domain -> BraveProvider -->
+        <line x1="430" y1="475" x2="280" y2="518" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <text x="340" y="500" fill="#94a3b8" font-size="8" text-anchor="middle">trait call</text>
+
+        <!-- Domain -> ExaProvider -->
+        <line x1="610" y1="475" x2="760" y2="518" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <text x="695" y="500" fill="#94a3b8" font-size="8" text-anchor="middle">trait call</text>
+
+        <!-- BraveProvider -> ReqwestHttpClient -->
+        <line x1="280" y1="590" x2="460" y2="638" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <text x="350" y="620" fill="#94a3b8" font-size="8" text-anchor="middle">HTTP GET</text>
+
+        <!-- ExaProvider -> ReqwestHttpClient -->
+        <line x1="760" y1="590" x2="580" y2="638" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <text x="680" y="620" fill="#94a3b8" font-size="8" text-anchor="middle">HTTP POST</text>
+
+        <!-- ReqwestHttpClient -> Brave API -->
+        <line x1="460" y1="690" x2="320" y2="738" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <text x="380" y="720" fill="#94a3b8" font-size="8" text-anchor="middle">JSON</text>
+
+        <!-- ReqwestHttpClient -> Exa API -->
+        <line x1="580" y1="690" x2="760" y2="738" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <text x="680" y="720" fill="#94a3b8" font-size="8" text-anchor="middle">JSON</text>
+
+        <!-- main.rs -> output.rs -->
+        <line x1="620" y1="125" x2="676" y2="125" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <text x="648" y="119" fill="#94a3b8" font-size="8" text-anchor="middle">render</text>
+
+        <!-- main.rs -> tracing -->
+        <line x1="620" y1="140" x2="848" y2="122" stroke="#fb7185" stroke-width="1.5" stroke-dasharray="4,4" marker-end="url(#arrowhead)"/>
+        <text x="740" y="125" fill="#fb7185" font-size="8" text-anchor="middle">init</text>
+
+        <!-- main.rs -> dotenvy -->
+        <line x1="620" y1="155" x2="848" y2="182" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,4" marker-end="url(#arrowhead)"/>
+        <text x="740" y="175" fill="#94a3b8" font-size="8" text-anchor="middle">load</text>
+
+        <!-- ==================== COMPONENTS ==================== -->
+        <!-- Terminal -->
+        <rect x="40" y="110" width="120" height="50" rx="6" fill="#0f172a"/>
+        <rect x="40" y="110" width="120" height="50" rx="6" fill="rgba(30, 41, 59, 0.5)" stroke="#94a3b8" stroke-width="1.5"/>
+        <text x="100" y="132" fill="white" font-size="12" font-weight="600" text-anchor="middle">Terminal</text>
+        <text x="100" y="148" fill="#94a3b8" font-size="9" text-anchor="middle">stdin / stdout / stderr</text>
+
+        <!-- CliArgs -->
+        <rect x="220" y="110" width="140" height="50" rx="6" fill="#0f172a"/>
+        <rect x="220" y="110" width="140" height="50" rx="6" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="290" y="132" fill="white" font-size="12" font-weight="600" text-anchor="middle">CliArgs</text>
+        <text x="290" y="148" fill="#94a3b8" font-size="9" text-anchor="middle">clap parser</text>
+
+        <!-- main.rs -->
+        <rect x="420" y="95" width="200" height="70" rx="6" fill="#0f172a"/>
+        <rect x="420" y="95" width="200" height="70" rx="6" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="520" y="122" fill="white" font-size="12" font-weight="600" text-anchor="middle">main.rs</text>
+        <text x="520" y="142" fill="#94a3b8" font-size="9" text-anchor="middle">entrypoint · tokio::main</text>
+        <text x="520" y="155" fill="#94a3b8" font-size="8" text-anchor="middle">run_single_provider</text>
+
+        <!-- output.rs -->
+        <rect x="680" y="110" width="140" height="50" rx="6" fill="#0f172a"/>
+        <rect x="680" y="110" width="140" height="50" rx="6" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="750" y="132" fill="white" font-size="12" font-weight="600" text-anchor="middle">output.rs</text>
+        <text x="750" y="148" fill="#94a3b8" font-size="9" text-anchor="middle">render · render_fanout</text>
+
+        <!-- ProviderRegistry -->
+        <rect x="440" y="210" width="160" height="50" rx="6" fill="#0f172a"/>
+        <rect x="440" y="210" width="160" height="50" rx="6" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="520" y="235" fill="white" font-size="12" font-weight="600" text-anchor="middle">ProviderRegistry</text>
+        <text x="520" y="251" fill="#94a3b8" font-size="9" text-anchor="middle">bootstrap from env</text>
+
+        <!-- SearchService -->
+        <rect x="340" y="310" width="160" height="50" rx="6" fill="#0f172a"/>
+        <rect x="340" y="310" width="160" height="50" rx="6" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="420" y="335" fill="white" font-size="12" font-weight="600" text-anchor="middle">SearchService</text>
+        <text x="420" y="351" fill="#94a3b8" font-size="9" text-anchor="middle">single provider</text>
+
+        <!-- FanoutSearchService -->
+        <rect x="540" y="310" width="180" height="50" rx="6" fill="#0f172a"/>
+        <rect x="540" y="310" width="180" height="50" rx="6" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="630" y="335" fill="white" font-size="12" font-weight="600" text-anchor="middle">FanoutSearchService</text>
+        <text x="630" y="351" fill="#94a3b8" font-size="9" text-anchor="middle">parallel fan-out</text>
+
+        <!-- Domain Layer -->
+        <rect x="380" y="410" width="280" height="65" rx="6" fill="#0f172a"/>
+        <rect x="380" y="410" width="280" height="65" rx="6" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="520" y="432" fill="white" font-size="12" font-weight="600" text-anchor="middle">Domain Layer</text>
+        <text x="520" y="452" fill="#94a3b8" font-size="9" text-anchor="middle">SearchProvider trait · SearchQuery</text>
+        <text x="520" y="465" fill="#94a3b8" font-size="8" text-anchor="middle">SearchResponse · error · types</text>
+
+        <!-- BraveProvider -->
+        <rect x="200" y="520" width="160" height="70" rx="6" fill="#0f172a"/>
+        <rect x="200" y="520" width="160" height="70" rx="6" fill="rgba(120, 53, 15, 0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+        <text x="280" y="545" fill="white" font-size="12" font-weight="600" text-anchor="middle">BraveProvider</text>
+        <text x="280" y="565" fill="#94a3b8" font-size="9" text-anchor="middle">client · dto · mapper · config</text>
+
+        <!-- ExaProvider -->
+        <rect x="680" y="520" width="160" height="70" rx="6" fill="#0f172a"/>
+        <rect x="680" y="520" width="160" height="70" rx="6" fill="rgba(120, 53, 15, 0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+        <text x="760" y="545" fill="white" font-size="12" font-weight="600" text-anchor="middle">ExaProvider</text>
+        <text x="760" y="565" fill="#94a3b8" font-size="9" text-anchor="middle">client · dto · mapper · config</text>
+
+        <!-- ReqwestHttpClient -->
+        <rect x="420" y="640" width="200" height="50" rx="6" fill="#0f172a"/>
+        <rect x="420" y="640" width="200" height="50" rx="6" fill="rgba(120, 53, 15, 0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+        <text x="520" y="665" fill="white" font-size="12" font-weight="600" text-anchor="middle">ReqwestHttpClient</text>
+        <text x="520" y="681" fill="#94a3b8" font-size="9" text-anchor="middle">HttpClient trait impl</text>
+
+        <!-- Brave API -->
+        <rect x="200" y="740" width="160" height="50" rx="6" fill="#0f172a"/>
+        <rect x="200" y="740" width="160" height="50" rx="6" fill="rgba(30, 41, 59, 0.5)" stroke="#94a3b8" stroke-width="1.5"/>
+        <text x="280" y="765" fill="white" font-size="12" font-weight="600" text-anchor="middle">Brave Search API</text>
+        <text x="280" y="781" fill="#94a3b8" font-size="9" text-anchor="middle">api.search.brave.com</text>
+
+        <!-- Exa API -->
+        <rect x="680" y="740" width="160" height="50" rx="6" fill="#0f172a"/>
+        <rect x="680" y="740" width="160" height="50" rx="6" fill="rgba(30, 41, 59, 0.5)" stroke="#94a3b8" stroke-width="1.5"/>
+        <text x="760" y="765" fill="white" font-size="12" font-weight="600" text-anchor="middle">Exa API</text>
+        <text x="760" y="781" fill="#94a3b8" font-size="9" text-anchor="middle">api.exa.ai</text>
+
+        <!-- tracing -->
+        <rect x="850" y="100" width="120" height="45" rx="6" fill="#0f172a"/>
+        <rect x="850" y="100" width="120" height="45" rx="6" fill="rgba(136, 19, 55, 0.4)" stroke="#fb7185" stroke-width="1.5"/>
+        <text x="910" y="122" fill="white" font-size="11" font-weight="600" text-anchor="middle">tracing</text>
+        <text x="910" y="136" fill="#94a3b8" font-size="8" text-anchor="middle">EnvFilter → stderr</text>
+
+        <!-- dotenvy -->
+        <rect x="850" y="165" width="120" height="35" rx="6" fill="#0f172a"/>
+        <rect x="850" y="165" width="120" height="35" rx="6" fill="rgba(30, 41, 59, 0.5)" stroke="#94a3b8" stroke-width="1.5"/>
+        <text x="910" y="182" fill="white" font-size="11" font-weight="600" text-anchor="middle">dotenvy</text>
+        <text x="910" y="194" fill="#94a3b8" font-size="8" text-anchor="middle">.env loader</text>
+
+        <!-- ==================== LEGEND ==================== -->
+        <text x="820" y="55" fill="white" font-size="10" font-weight="600">Legend</text>
+
+        <rect x="820" y="62" width="16" height="10" rx="2" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" stroke-width="1"/>
+        <text x="842" y="70" fill="#94a3b8" font-size="8">CLI / Frontend</text>
+
+        <rect x="820" y="78" width="16" height="10" rx="2" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1"/>
+        <text x="842" y="86" fill="#94a3b8" font-size="8">Application</text>
+
+        <rect x="820" y="94" width="16" height="10" rx="2" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1"/>
+        <text x="842" y="102" fill="#94a3b8" font-size="8">Domain / Core</text>
+
+        <rect x="820" y="110" width="16" height="10" rx="2" fill="rgba(120, 53, 15, 0.3)" stroke="#fbbf24" stroke-width="1"/>
+        <text x="842" y="118" fill="#94a3b8" font-size="8">Provider / Transport</text>
+
+        <rect x="820" y="126" width="16" height="10" rx="2" fill="rgba(30, 41, 59, 0.5)" stroke="#94a3b8" stroke-width="1"/>
+        <text x="842" y="134" fill="#94a3b8" font-size="8">External API</text>
+
+        <rect x="820" y="142" width="16" height="10" rx="2" fill="rgba(136, 19, 55, 0.4)" stroke="#fb7185" stroke-width="1"/>
+        <text x="842" y="150" fill="#94a3b8" font-size="8">Observability</text>
+
+        <line x1="820" y1="162" x2="836" y2="162" stroke="#94a3b8" stroke-width="1" stroke-dasharray="3,3"/>
+        <text x="842" y="165" fill="#94a3b8" font-size="8">Async call</text>
+      </svg>
+    </div>
+
+    <!-- Info Cards -->
+    <div class="cards">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot cyan"></div>
+          <h3>CLI Layer</h3>
+        </div>
+        <ul>
+          <li>• CliArgs — clap derive parser with query, provider, and filters</li>
+          <li>• CliSearchType / CliSafeSearch / CliProvider value enums</li>
+          <li>• output.rs — render_text and render_fanout_text formatters</li>
+          <li>• --about flag and structured help text</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot emerald"></div>
+          <h3>Application Layer</h3>
+        </div>
+        <ul>
+          <li>• main.rs — tokio::main entrypoint, run_single_provider helper</li>
+          <li>• ProviderRegistry — env-based builder registry (Brave + Exa)</li>
+          <li>• SearchService — single-provider orchestration wrapper</li>
+          <li>• FanoutSearchService — parallel search across all enabled providers</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot amber"></div>
+          <h3>Provider &amp; Transport Layer</h3>
+        </div>
+        <ul>
+          <li>• BraveProvider &amp; ExaProvider — SearchProvider trait impls</li>
+          <li>• Per-provider DTOs, mappers, and config modules</li>
+          <li>• HttpClient trait — abstracts GET/POST JSON transport</li>
+          <li>• ReqwestHttpClient — auth, rate-limit, and decode error handling</li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="footer">sophon-cli • Rust Edition 2024 • Provider-agnostic search CLI</p>
+  </div>
+</body>
+</html>
