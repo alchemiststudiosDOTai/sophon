@@ -37,36 +37,41 @@ bootstrap composes app + providers + transport at startup
    └── user runs: cargo run -- "query" --search-type news --limit 3
 
 2. src/main.rs
-   └── CliArgs::parse() produces CliArgs { query, provider, search_type, limit, ... }
-   └── maps CliArgs → SearchQuery
-   └── for `brave` or `exa`, asks ProviderRegistry::build(provider) for SearchService
-   └── for `all`, asks ProviderRegistry::build_all_enabled() for FanoutSearchService
+   └── initializes tracing and dotenv
+   └── delegates runtime execution to src/cli/runner.rs
 
-3. src/app/search_service.rs or src/app/fanout_search_service.rs
+3. src/cli/runner.rs
+   └── CliArgs::parse() produces CliArgs { query, provider, search_type, limit, ... }
+   └── src/cli/request.rs maps CliArgs + query text → SearchQuery
+   └── selects single-provider or all-provider mode
+   └── requests services from ProviderRegistry
+   └── renders stdout through src/cli/output.rs
+
+4. src/app/search_service.rs or src/app/fanout_search_service.rs
    └── SearchService::search(SearchQuery) awaits one provider
    └── FanoutSearchService::search_all(SearchQuery) awaits enabled providers sequentially
    └── delegates to dyn SearchProvider trait objects
 
-4. src/providers/*/client.rs
+5. src/providers/*/client.rs
    └── provider-specific SearchProvider::search(&SearchQuery)
    └── Brave builds GET endpoint + query params
    └── Exa builds POST /search JSON body
    └── calls HttpClient::get_json() or HttpClient::post_json()
 
-5. src/transport/http.rs
+6. src/transport/http.rs
    └── ReqwestHttpClient executes HTTP GET
    └── on success: deserializes JSON into BraveNewsResponse
    └── on failure: maps status code → SearchError
 
-6. src/providers/brave/mapper.rs
+7. src/providers/brave/mapper.rs
    └── map_news_response(BraveNewsResponse) → SearchResponse
    └── transforms DTOs into domain SearchResult::News items
 
-7. src/cli/output.rs
+8. src/cli/output.rs
    └── render_text(&SearchResponse) → String for single-provider output
    └── render_fanout_text(&SearchBatchResponse) → String for all-provider output
 
-8. src/main.rs
+9. src/cli/runner.rs
    └── println!("{}", rendered_string)
 ```
 
@@ -168,7 +173,7 @@ Errors are created at the layer where the failure occurs and bubble upward uncha
 1. **Transport layer** — `reqwest` failures, non-2xx HTTP status, or JSON decode errors become `SearchError::Transport`, `SearchError::Provider`, or `SearchError::Decode`.
 2. **Provider layer** — can surface `SearchError` directly; does not wrap in another error type.
 3. **App layer** — `SearchService` returns the `SearchError` untouched; `FanoutSearchService` records per-provider failures in `SearchBatchResponse` and continues to later providers.
-4. **CLI layer** — `main.rs` matches on single-provider `SearchError` and prints a human-readable message to `stderr`, or renders fan-out successes and failures and exits with code `1` when no provider succeeded.
+4. **CLI layer** — `src/cli/runner.rs` matches on single-provider `SearchError` and prints a human-readable message to `stderr`, or renders fan-out successes and failures and returns exit code `1` when no provider succeeded.
 
 This keeps error handling simple: there is only one error type in the public API.
 
@@ -196,7 +201,7 @@ Unsupported Exa inputs are rejected at runtime instead of being ignored: `Images
 
 ## Runtime provider selection
 
-`main.rs` remains the binary edge that chooses either a single-provider path or the all-enabled-provider fan-out path. Concrete provider construction lives in `src/bootstrap/provider_registry.rs`, where typed provider config, HTTP transport, provider clients, `SearchService`, and `FanoutSearchService` are composed.
+`src/main.rs` remains a thin process entrypoint. It initializes process-level concerns and delegates to `src/cli/runner.rs`, which owns user-surface branching, query normalization, output rendering, and exit-code calculation. Concrete provider construction remains in `src/bootstrap/provider_registry.rs`, where typed provider config, HTTP transport, provider clients, `SearchService`, and `FanoutSearchService` are composed.
 
 - `--provider brave` uses `ProviderRegistry::build(ProviderId::Brave)`; the registry includes it only when `BRAVE_API_KEY` is configured
 - `--provider exa` uses `ProviderRegistry::build(ProviderId::Exa)`; the registry includes it only when `EXA_API_KEY` is configured
@@ -214,7 +219,7 @@ The rules are verified by `tests/architecture_test.rs`. These tests scan source 
 | `src/domain/` | `crate::providers::`, `crate::transport::`, `crate::cli::`, `crate::app::` |
 | `src/transport/` | `crate::providers::`, `crate::cli::`, `crate::app::` |
 | `src/providers/` | `crate::cli::`, `crate::app::` |
-| `src/app/` | `crate::cli::` |
+| `src/app/` | `crate::cli::`, `crate::bootstrap::`, `crate::providers::`, `crate::transport::` |
 | `src/bootstrap/` | `crate::cli::` |
 | Any layer except `src/cli/` | `render_text` |
 

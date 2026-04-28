@@ -16,7 +16,7 @@
 <header class="hero">
   <div class="kicker">current node-and-arrow map</div>
   <h1>Current dependency architecture map.</h1>
-  <p class="lead">This is the current codebase as a real map: boxes are actual files/modules, arrows are source-code import dependencies. It is intentionally less abstract than the ideal map so you can compare what exists to the target shape.</p>
+  <p class="lead">This is the current codebase as a real map after the runtime organization refactor: the entrypoint delegates to the CLI runner, the CLI surface owns user-facing branching and rendering, bootstrap owns concrete construction, and domain remains the bottom layer.</p>
   <div class="links"><span class="pill">arrow = importer depends on target</span><span class="pill">dashed = local sibling/module-family dependency</span><a href="ideal-dependency-architecture-map.html">compare ideal map →</a></div>
 </header>
 
@@ -27,9 +27,10 @@
   <svg viewBox="0 0 1360 1040" aria-hidden="true">
     <defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="currentColor"/></marker></defs>
     <g style="color:#22c55e">
-      <path class="edge main" marker-end="url(#arrow)" d="M680 103 V160"/>
       <path class="edge main" marker-end="url(#arrow)" d="M680 103 C845 126 955 142 985 165"/>
-      <path class="edge main" marker-end="url(#arrow)" d="M680 103 V305"/>
+      <path class="edge main" marker-end="url(#arrow)" d="M985 248 C860 255 750 250 680 248"/>
+      <path class="edge main" marker-end="url(#arrow)" d="M985 248 C860 235 430 230 270 235"/>
+      <path class="edge main" marker-end="url(#arrow)" d="M985 248 C930 300 790 315 680 332"/>
       <path class="edge main" marker-end="url(#arrow)" d="M985 248 C900 285 790 310 680 332"/>
       <path class="edge main" marker-end="url(#arrow)" d="M680 393 V450"/>
       <path class="edge main" marker-end="url(#arrow)" d="M680 393 C860 450 1030 522 1110 606"/>
@@ -48,7 +49,7 @@
       <path class="edge local" marker-end="url(#arrow)" d="M500 930 H690"/>
       <path class="edge local" marker-end="url(#arrow)" d="M690 930 H880"/>
     </g>
-    <text class="label" x="700" y="137">main imports CLI + bootstrap + domain</text>
+    <text class="label" x="700" y="137">entrypoint delegates to CLI runner</text>
     <text class="label" x="805" y="476">bootstrap wires concrete providers + transport</text>
     <text class="label" x="470" y="760">providers map DTOs into domain</text>
     <text class="label" x="535" y="956">domain sibling imports only</text>
@@ -57,7 +58,7 @@
   <div class="node entry" style="left:586px;top:38px"><strong>src/main.rs</strong><small>entrypoint</small></div>
   <div class="node cli" style="left:175px;top:180px"><strong>cli::args</strong><small>parses flags into domain options</small></div>
   <div class="node cli" style="left:586px;top:180px"><strong>cli::output</strong><small>renders domain responses</small></div>
-  <div class="node entry" style="left:890px;top:180px"><strong>single_provider_search</strong><small>helper using registry + renderer</small></div>
+  <div class="node cli" style="left:890px;top:180px"><strong>cli::runner</strong><small>provider mode + rendering flow</small></div>
   <div class="node boot" style="left:586px;top:325px"><strong>bootstrap::provider_registry</strong><small>builds services/providers/transport</small></div>
   <div class="node app" style="left:455px;top:470px"><strong>app::SearchService</strong><small>single provider orchestration</small></div>
   <div class="node app" style="left:715px;top:470px"><strong>app::FanoutSearchService</strong><small>multi-provider orchestration</small></div>
@@ -75,7 +76,7 @@
 </section>
 
 <section class="section"><h2>How to read this map</h2><div class="edges">
-  <div class="card"><b>Green arrows</b><p>Main architectural flow: entry → CLI/bootstrap → app → adapters → domain.</p></div>
+  <div class="card"><b>Green arrows</b><p>Main architectural flow: entry → CLI surface → bootstrap/app → adapters → domain.</p></div>
   <div class="card"><b>Blue arrows</b><p>Supporting imports, mostly direct imports into the domain facade/types.</p></div>
   <div class="card"><b>Dashed arrows</b><p>Local sibling dependencies, like provider client → mapper and domain file → domain sibling.</p></div>
 </div></section>
