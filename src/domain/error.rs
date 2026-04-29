@@ -1,4 +1,4 @@
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, Clone, thiserror::Error)]
 #[allow(dead_code)]
 pub enum SearchError {
     #[error("invalid query: {0}")]

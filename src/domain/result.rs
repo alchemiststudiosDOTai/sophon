@@ -12,14 +12,14 @@ pub struct SearchResponse {
     pub next_page: Option<PageToken>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SearchBatchResponse {
     pub query: String,
     pub responses: Vec<SearchResponse>,
     pub failures: Vec<ProviderSearchFailure>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ProviderSearchFailure {
     pub provider: String,
     pub error: SearchError,
