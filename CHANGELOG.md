@@ -26,20 +26,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Environment-filtered structured tracing spans for startup, search orchestration, provider adapters, and HTTP transport. Logs are written to stderr so CLI result output stays clean. (#8)
 - Markdown frontmatter validation and mdBook frontmatter stripping in the canonical `just check` gate. (#9)
 - Cargo-managed pre-push hook that runs `just check`. (#9)
+- Exa as a selectable search provider alongside Brave. (#2)
 - Repository operating surfaces: `.env.example`, CODEOWNERS, issue and PR templates, label definitions, AGENTS validation CI, and a `sophon-cli` agent skill. (#6)
+- Hygiene checks for file-size limits and tech-debt markers (TODO/FFIXME) in the canonical `just check` gate and CI workflow. (#10)
+- Integration test suite for app-layer fan-out, provider registry, and CLI argument parsing. (#12)
 
 ### Changed
 
 - `main.rs` now selects providers through `ProviderId` and `ProviderRegistry` instead of directly constructing Brave and Exa clients. (#7)
 - Production startup registers only providers with valid environment configuration, and provider-unavailable errors list configured providers. (#7)
 - Architecture tests now include the `bootstrap` composition layer boundary. (#7)
-- `HARNESS.md` and architecture docs now reflect the bootstrap layer, docs metadata guard, cargo-husky hook, and current validation chain. (#7, #9)
+- `HARNESS.md` and architecture docs now reflect the bootstrap layer, docs metadata guard, cargo-husky hook, and current validation chain. (#7, #9, #10)
+- Crate now exposes a library target to support integration tests importing internal modules directly. (#12)
 - Exa `/search` requests use highlights plus a query-scoped summary instead of requesting full-page `text` for normal CLI output. (#5)
 - Exa snippet normalization now prefers trimmed summaries, then capped joined highlights; `text` is not used as a snippet fallback. (#5)
 - CLI news output now prints `snippet` when present, matching web-result rendering. (#5)
 
 ### Fixed
 
+- HARNESS canonical gate chain validation. (#1)
+- Empty or whitespace-only API keys are now rejected for provider configuration to prevent misconfiguration. (#12)
 - Exa web results no longer dump full extracted page markdown into the terminal when `summary` is missing. (#5)
 
 ### Removed
