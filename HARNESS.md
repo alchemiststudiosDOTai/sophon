@@ -65,6 +65,7 @@ No structural rule engine is currently configured (no ast-grep, semgrep, or cust
 | App-layer tests | `cargo test` | `src/app/search_service.rs` | 1 mock-provider test for `SearchService` delegation |
 | Output tests | `cargo test` | `src/cli/output.rs` | 1 text-rendering test with mixed result types |
 | Architecture tests | `cargo test` | `tests/architecture_test.rs` | 6 source-scan tests enforcing layer boundaries |
+| CI/CD direction tests | `cargo test` | `tests/cicd_direction_test.rs` | Source-scan tests verifying pre-push, CI workflow, and harness docs preserve validation order |
 
 No snapshot, golden, or integration test suites exist.
 
@@ -131,6 +132,7 @@ Ordered list of hygiene checks as executed by the hygiene entry point:
 |------|---------------------|
 | `justfile:1-6` | Canonical local check gate |
 | `.cargo-husky/hooks/pre-push` | Cargo-managed pre-push hook that runs `just check` |
+| `tests/cicd_direction_test.rs` | CI/CD direction tests that keep the pre-push hook, CI workflow, and harness docs aligned |
 | `scripts/check_markdown_frontmatter.py` | Markdown frontmatter and ontology relation validator |
 | `scripts/mdbook_strip_frontmatter.py` | mdBook preprocessor that keeps metadata out of rendered HTML |
 | `AGENTS.md` | Operator-facing navigational map |

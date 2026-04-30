@@ -20,6 +20,7 @@
 
 ## Commands
 - `just check` — run formatter check, clippy (with complexity/cognitive lints), tests, and mdBook docs build
+- Windows PowerShell: do **not** run plain `just check`; use `just --shell powershell --shell-arg -Command check` because `just` otherwise looks for `sh`.
 - `cargo test` — run all inline `#[cfg(test)]` unit tests and architecture boundary tests
 - `cargo run -- "<query>"` — run a live web search (requires `BRAVE_API_KEY` in `.env`)
 - `cargo run -- "<query>" --search-type news --limit 3` — run a live news search
@@ -42,10 +43,10 @@
 - Key spans: `main` (startup), `SearchService::search` (orchestration), `BraveProvider::search` / `ExaProvider::search` (provider adapters), `ReqwestHttpClient::{get_json,post_json}` (transport).
 
 ## Change Guardrails
-- Run `just check` before committing.
+- Run `just check` before committing. In Windows PowerShell, run `just --shell powershell --shell-arg -Command check` instead of plain `just check`.
 - Keep domain types provider-agnostic; add provider-specific logic in `src/providers/`.
 - Architecture boundary tests enforce import direction; if you add a cross-layer `use`, update boundaries intentionally and adjust `tests/architecture_test.rs` if needed.
 
 ## Validation Checklist
-- [ ] `just check` passes (fmt, clippy, tests, docs build)
+- [ ] `just check` passes, or on Windows PowerShell `just --shell powershell --shell-arg -Command check` passes (fmt, clippy, tests, docs build)
 - [ ] Every path listed above still exists
