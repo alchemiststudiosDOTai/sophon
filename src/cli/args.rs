@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use clap::{Parser, ValueEnum};
 
 use crate::domain::{SafeSearch, SearchType};
@@ -73,6 +75,29 @@ pub struct CliArgs {
     #[arg(long)]
     pub country: Option<String>,
 
+    #[arg(
+        long,
+        value_name = "PATH",
+        help = "Persist search results to this SQLite database"
+    )]
+    pub db: Option<PathBuf>,
+
+    #[arg(
+        long,
+        requires = "db",
+        help = "Fetch result URLs and store HTTP bodies in the database (requires --db)"
+    )]
+    pub scrape: bool,
+
+    #[arg(
+        long,
+        default_value_t = 5,
+        value_name = "N",
+        requires = "scrape",
+        help = "Maximum number of result URLs to fetch when --scrape is set"
+    )]
+    pub scrape_limit: usize,
+
     #[arg(long)]
     pub language: Option<String>,
 }
@@ -101,5 +126,33 @@ mod tests {
         let default_args =
             CliArgs::try_parse_from(["sophon-cli", "rust"]).expect("default provider parses");
         assert_eq!(default_args.provider, CliProvider::Brave);
+    }
+
+    #[test]
+    fn test_db_flag_parses_path() {
+        let args =
+            CliArgs::try_parse_from(["sophon-cli", "q", "--db", "/tmp/out.db"]).expect("parse");
+        assert_eq!(
+            args.db.as_deref(),
+            Some(std::path::Path::new("/tmp/out.db"))
+        );
+        assert!(!args.scrape);
+    }
+
+    #[test]
+    fn test_db_and_scrape_parse() {
+        let args = CliArgs::try_parse_from([
+            "sophon-cli",
+            "q",
+            "--db",
+            "results.db",
+            "--scrape",
+            "--scrape-limit",
+            "3",
+        ])
+        .expect("parse");
+        assert_eq!(args.db.as_deref(), Some(std::path::Path::new("results.db")));
+        assert!(args.scrape);
+        assert_eq!(args.scrape_limit, 3);
     }
 }

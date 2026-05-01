@@ -2,8 +2,8 @@
 title: "Current Dependency Architecture Map"
 when_to_read:
   - "When you need to see the current Rust import/dependency direction as a clean architecture map."
-  - "When comparing the current module import shape against the ideal architecture map."
-summary: "Current architecture-style map of sophon-cli module import direction, shown in the same visual language as the ideal dependency architecture map."
+  - "When reviewing the current module import shape."
+summary: "Current architecture-style map of sophon-cli module import direction."
 ontology_relations:
   - relation: "part_of"
     target: "docs/SUMMARY.md"
@@ -11,9 +11,6 @@ ontology_relations:
   - relation: "explains"
     target: "docs/architecture.md"
     note: "Visualizes the concrete import direction behind the architecture layers."
-  - relation: "compares_with"
-    target: "docs/ideal-dependency-architecture-map.md"
-    note: "Pairs current architecture with ideal target architecture."
 ---
 
 # Current Dependency Architecture Map
@@ -29,10 +26,6 @@ importer -> imported dependency
 Open the standalone visual page:
 
 [Current dependency architecture map](dependency-architecture-map.html)
-
-Compare with:
-
-[Ideal dependency architecture map](ideal-dependency-architecture-map.md)
 
 <iframe
   src="dependency-architecture-map.html"
