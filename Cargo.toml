@@ -21,6 +21,7 @@ dotenvy = "0.15"
 chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+spider = { version = "2", default-features = false, features = ["chrome", "chrome_intercept", "chrome_stealth"] }
 
 [[test]]
 name = "search_service_integration"

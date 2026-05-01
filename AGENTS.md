@@ -13,8 +13,8 @@
 - `src/domain/` — provider-agnostic types (`query.rs`, `result.rs`, `types.rs`, `error.rs`, `provider.rs`)
 - `src/providers/brave/` — Brave-specific DTOs, mapper, config, and `BraveProvider` client
 - `src/transport/` — `HttpClient` trait and `ReqwestHttpClient` adapter
-- `src/app/` — `SearchService` orchestrator (`Box<dyn SearchProvider>`)
-- `src/cli/` — `clap` argument parsing (`args.rs`) and text renderer (`output.rs`)
+- `src/app/` — `SearchService` / `FanoutSearchService` orchestrators (`Box<dyn SearchProvider>`)
+- `src/cli/` — `clap` argument parsing (`args.rs`), runner (`runner.rs`), optional post-search Spider scrape (`scrape.rs`), and text renderer (`output.rs`)
 - `tests/architecture_test.rs` — source-scan tests enforcing layer boundaries
 - `docs/` — mdBook source: intro, architecture, quickstart
 
@@ -23,7 +23,7 @@
 - Windows PowerShell: do **not** run plain `just check`; use `just --shell powershell --shell-arg -Command check` because `just` otherwise looks for `sh`.
 - `cargo test` — run all inline `#[cfg(test)]` unit tests and architecture boundary tests
 - `cargo run -- "<query>"` — run a live web search (requires `BRAVE_API_KEY` in `.env`)
-- `cargo run -- "<query>" --search-type news --limit 3` — run a live news search
+- `cargo run -- "<query>" --scrape` — after search, dedupe result URLs and crawl each with headless Chrome (Spider), rendering content excerpts separately from crawl telemetry; `--scrape-limit` is pages per result URL seed, not top-N search results; see `--scrape-timeout-seconds`; `CHROME_URL` for remote browser
 
 ## Boundaries
 - **Domain** (`src/domain/`) — pure types and traits; no HTTP, no CLI parsing

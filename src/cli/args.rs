@@ -75,6 +75,21 @@ pub struct CliArgs {
 
     #[arg(long)]
     pub language: Option<String>,
+
+    /// After search, scrape each deduplicated result URL with headless Chrome (Spider).
+    #[arg(long)]
+    pub scrape: bool,
+
+    /// Max pages to crawl per result URL seed when scraping; this does not limit search results.
+    #[arg(
+        long,
+        help = "Max pages to crawl per result URL seed; does not limit search results"
+    )]
+    pub scrape_limit: Option<usize>,
+
+    /// Seconds before giving up scraping a single result URL seed (default when omitted: 120).
+    #[arg(long)]
+    pub scrape_timeout_seconds: Option<u64>,
 }
 
 #[cfg(test)]
@@ -101,5 +116,31 @@ mod tests {
         let default_args =
             CliArgs::try_parse_from(["sophon-cli", "rust"]).expect("default provider parses");
         assert_eq!(default_args.provider, CliProvider::Brave);
+    }
+
+    #[test]
+    fn test_cli_parse_scrape_defaults_and_explicit_flags() {
+        let baseline = CliArgs::try_parse_from(["sophon-cli", "rust"]).expect("parses query");
+        assert!(!baseline.scrape);
+        assert!(baseline.scrape_limit.is_none());
+        assert!(baseline.scrape_timeout_seconds.is_none());
+
+        let with_scrape =
+            CliArgs::try_parse_from(["sophon-cli", "rust", "--scrape"]).expect("parses scrape");
+        assert!(with_scrape.scrape);
+
+        let full = CliArgs::try_parse_from([
+            "sophon-cli",
+            "--scrape",
+            "--scrape-limit",
+            "5",
+            "--scrape-timeout-seconds",
+            "30",
+            "rust",
+        ])
+        .expect("parses scrape options");
+        assert!(full.scrape);
+        assert_eq!(full.scrape_limit, Some(5));
+        assert_eq!(full.scrape_timeout_seconds, Some(30));
     }
 }

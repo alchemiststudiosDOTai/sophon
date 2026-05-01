@@ -30,6 +30,7 @@ fn cli_help_flag_prints_usage() {
     assert!(stdout.contains("--search-type"));
     assert!(stdout.contains("--limit"));
     assert!(stdout.contains("--about"));
+    assert!(stdout.contains("--scrape"));
     assert!(stdout.contains("--safe-search"));
 }
 

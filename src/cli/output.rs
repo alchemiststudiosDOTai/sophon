@@ -1,4 +1,7 @@
+use crate::cli::scrape::ScrapedSite;
 use crate::domain::{SearchBatchResponse, SearchResponse, SearchResult};
+
+const SCRAPED_CONTENT_PREVIEW_CHARS: usize = 2_000;
 
 pub fn render_text(response: &SearchResponse) -> String {
     let mut lines = vec![
@@ -46,6 +49,53 @@ pub fn render_text(response: &SearchResponse) -> String {
     lines.join("\n")
 }
 
+pub fn render_scraped_sites(sites: &[ScrapedSite]) -> String {
+    let mut lines = vec!["== Scraped pages ==".to_string(), String::new()];
+    for site in sites {
+        lines.push(format!("Seed: {}", site.seed_url));
+        lines.push(format!("Time: {:?}", site.duration));
+        lines.push(format!("Page limit per seed: {}", site.page_limit));
+        if let Some(err) = &site.error {
+            lines.push(format!("Error: {err}"));
+        } else {
+            lines.push(format!("Extracted content pages: {}", site.pages.len()));
+            for (i, page) in site.pages.iter().enumerate() {
+                lines.push(format!("  Page {}: {}", i + 1, page.url));
+                lines.push(format!("  Status: {}", page.status_code));
+                lines.push("  Content excerpt:".to_string());
+                for line in preview_content(&page.content).lines() {
+                    lines.push(format!("    {}", line));
+                }
+            }
+
+            lines.push(String::new());
+            lines.push(format!(
+                "Crawl telemetry - visited URLs: {}",
+                site.visited_urls.len()
+            ));
+            for url in &site.visited_urls {
+                lines.push(format!("  - {}", url));
+            }
+        }
+        lines.push(String::new());
+    }
+    lines.join("\n")
+}
+
+fn preview_content(content: &str) -> String {
+    let trimmed = content.trim();
+    if trimmed.chars().count() <= SCRAPED_CONTENT_PREVIEW_CHARS {
+        return trimmed.to_string();
+    }
+
+    let mut preview: String = trimmed
+        .chars()
+        .take(SCRAPED_CONTENT_PREVIEW_CHARS)
+        .collect();
+    preview.push_str("\n    ... [content truncated]");
+    preview
+}
+
 pub fn render_fanout_text(response: &SearchBatchResponse) -> String {
     let mut lines = vec![
         format!("Query: {}", response.query),
@@ -73,6 +123,7 @@ pub fn render_fanout_text(response: &SearchBatchResponse) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::cli::scrape::ScrapedSite;
     use crate::domain::{
         ImageResult, NewsResult, ProviderSearchFailure, SearchError, VideoResult, WebResult,
     };
@@ -122,6 +173,40 @@ mod tests {
         assert!(text.contains("Breaking update"));
         assert!(text.contains("[IMAGE] Rust Logo"));
         assert!(text.contains("[VIDEO] Rust Tutorial"));
+    }
+
+    #[test]
+    fn test_render_scraped_sites_shows_content_separate_from_visited_urls() {
+        let ok = ScrapedSite {
+            seed_url: "https://example.com".into(),
+            duration: std::time::Duration::from_millis(100),
+            page_limit: 5,
+            pages: vec![crate::cli::scrape::ScrapedPage {
+                url: "https://example.com".into(),
+                status_code: 200,
+                content: "<html><body>Real scraped page body</body></html>".into(),
+            }],
+            visited_urls: vec!["https://example.com/a".into()],
+            error: None,
+        };
+        let err = ScrapedSite {
+            seed_url: "https://bad".into(),
+            duration: std::time::Duration::from_secs(1),
+            page_limit: 5,
+            pages: vec![],
+            visited_urls: vec![],
+            error: Some("boom".into()),
+        };
+        let text = render_scraped_sites(&[ok, err]);
+        assert!(text.contains("== Scraped pages =="));
+        assert!(text.contains("Seed: https://example.com"));
+        assert!(text.contains("Page limit per seed: 5"));
+        assert!(text.contains("Extracted content pages: 1"));
+        assert!(text.contains("Content excerpt:"));
+        assert!(text.contains("Real scraped page body"));
+        assert!(text.contains("Crawl telemetry - visited URLs: 1"));
+        assert!(text.contains("https://example.com/a"));
+        assert!(text.contains("Error: boom"));
     }
 
     #[test]

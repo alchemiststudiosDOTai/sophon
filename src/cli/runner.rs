@@ -2,8 +2,12 @@ use clap::Parser;
 
 use crate::bootstrap::provider_registry::{ProviderId, ProviderRegistry};
 use crate::cli::args::{CliArgs, CliProvider};
-use crate::cli::output::{render_fanout_text, render_text};
+use crate::cli::output::{render_fanout_text, render_scraped_sites, render_text};
 use crate::cli::request::build_search_query;
+use crate::cli::scrape::{
+    deduped_urls_from_batch, deduped_urls_from_response, page_limit_for_scrape, scrape_seed_urls,
+    timeout_duration_for_scrape,
+};
 use crate::domain::SearchQuery;
 
 pub async fn run_from_env() -> i32 {
@@ -29,9 +33,9 @@ pub async fn run(args: CliArgs) -> i32 {
     let registry = ProviderRegistry::production_from_env();
 
     match args.provider {
-        CliProvider::Brave => run_single_provider(&registry, ProviderId::Brave, query).await,
-        CliProvider::Exa => run_single_provider(&registry, ProviderId::Exa, query).await,
-        CliProvider::All => run_all_enabled(&registry, query).await,
+        CliProvider::Brave => run_single_provider(&registry, ProviderId::Brave, query, &args).await,
+        CliProvider::Exa => run_single_provider(&registry, ProviderId::Exa, query, &args).await,
+        CliProvider::All => run_all_enabled(&registry, query, &args).await,
     }
 }
 
@@ -50,6 +54,7 @@ async fn run_single_provider(
     registry: &ProviderRegistry,
     provider_id: ProviderId,
     query: SearchQuery,
+    args: &CliArgs,
 ) -> i32 {
     tracing::info!(provider = %provider_id, query = %query.text, "initializing search service");
 
@@ -65,7 +70,21 @@ async fn run_single_provider(
     match service.search(query).await {
         Ok(response) => {
             tracing::info!(result_count = response.results.len(), total_estimated = ?response.total_estimated, "search completed");
-            println!("{}", render_text(&response));
+            let mut printed = render_text(&response);
+            if args.scrape {
+                let seeds = deduped_urls_from_response(&response);
+                let scraped = scrape_seed_urls(
+                    &seeds,
+                    page_limit_for_scrape(args),
+                    timeout_duration_for_scrape(args),
+                )
+                .await;
+                if !scraped.is_empty() {
+                    printed.push('\n');
+                    printed.push_str(&render_scraped_sites(&scraped));
+                }
+            }
+            println!("{}", printed);
             0
         }
         Err(error) => {
@@ -76,7 +95,7 @@ async fn run_single_provider(
     }
 }
 
-async fn run_all_enabled(registry: &ProviderRegistry, query: SearchQuery) -> i32 {
+async fn run_all_enabled(registry: &ProviderRegistry, query: SearchQuery, args: &CliArgs) -> i32 {
     tracing::info!(query = %query.text, "initializing all-enabled provider fan-out service");
     let service = match registry.build_all_enabled() {
         Ok(service) => service,
@@ -93,6 +112,20 @@ async fn run_all_enabled(registry: &ProviderRegistry, query: SearchQuery) -> i32
         failed_providers = response.failures.len(),
         "fan-out search completed"
     );
-    println!("{}", render_fanout_text(&response));
+    let mut printed = render_fanout_text(&response);
+    if args.scrape {
+        let seeds = deduped_urls_from_batch(&response);
+        let scraped = scrape_seed_urls(
+            &seeds,
+            page_limit_for_scrape(args),
+            timeout_duration_for_scrape(args),
+        )
+        .await;
+        if !scraped.is_empty() {
+            printed.push('\n');
+            printed.push_str(&render_scraped_sites(&scraped));
+        }
+    }
+    println!("{}", printed);
     if response.responses.is_empty() { 1 } else { 0 }
 }
