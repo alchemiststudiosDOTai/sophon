@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
   validate-agents:
     name: Validate AGENTS.md Consistency
@@ -67,6 +71,8 @@ jobs:
           tool: just,mdbook,cargo-udeps
 
       - name: Verify canonical command works
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: just check
 
       - name: Install nightly toolchain for cargo-udeps
