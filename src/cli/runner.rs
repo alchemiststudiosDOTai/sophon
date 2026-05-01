@@ -107,33 +107,34 @@ async fn persist_and_optional_scrape_single(
     scrape: bool,
     page_limit: usize,
 ) -> Result<(), String> {
-    let response_clone = response.clone();
-    let path = db_path.to_path_buf();
-    let run_id = tokio::task::spawn_blocking(move || {
-        let writer = SearchDbWriter::open(&path).map_err(|e| e.to_string())?;
-        writer
-            .persist_response(&response_clone)
-            .map_err(|e| e.to_string())
-    })
-    .await
-    .map_err(|e| e.to_string())??;
-
     if scrape {
         let client = reqwest::Client::new();
         let (pages, duration_ms, fatal) = scrape_result_urls(&client, response, page_limit).await;
         let seed_url = first_result_url(response);
+        let response_clone = response.clone();
         let path = db_path.to_path_buf();
         tokio::task::spawn_blocking(move || {
-            let writer = SearchDbWriter::open(&path).map_err(|e| e.to_string())?;
+            let mut writer = SearchDbWriter::open(&path).map_err(|e| e.to_string())?;
             writer
-                .insert_scrape(
-                    run_id,
+                .persist_response_with_scrape(
+                    &response_clone,
                     &seed_url,
                     duration_ms,
-                    pages.len(),
+                    page_limit,
                     fatal.as_deref(),
                     &pages,
                 )
+                .map_err(|e| e.to_string())
+        })
+        .await
+        .map_err(|e| e.to_string())??;
+    } else {
+        let response_clone = response.clone();
+        let path = db_path.to_path_buf();
+        tokio::task::spawn_blocking(move || {
+            let mut writer = SearchDbWriter::open(&path).map_err(|e| e.to_string())?;
+            writer
+                .persist_response(&response_clone)
                 .map_err(|e| e.to_string())
         })
         .await
@@ -148,34 +149,34 @@ async fn persist_and_optional_scrape_batch(
     scrape: bool,
     page_limit: usize,
 ) -> Result<(), String> {
-    let batch_clone = batch.clone();
-    let path = db_path.to_path_buf();
-    let run_ids = tokio::task::spawn_blocking(move || {
-        let writer = SearchDbWriter::open(&path).map_err(|e| e.to_string())?;
-        writer
-            .persist_batch_responses(&batch_clone)
-            .map_err(|e| e.to_string())
-    })
-    .await
-    .map_err(|e| e.to_string())??;
-
-    if scrape && !run_ids.is_empty() {
-        let attach_run_id = run_ids[0];
+    if scrape && !batch.responses.is_empty() {
         let client = reqwest::Client::new();
         let (pages, duration_ms, fatal) = scrape_batch_urls(&client, batch, page_limit).await;
         let seed_url = first_url_in_batch(batch);
+        let batch_clone = batch.clone();
         let path = db_path.to_path_buf();
         tokio::task::spawn_blocking(move || {
-            let writer = SearchDbWriter::open(&path).map_err(|e| e.to_string())?;
+            let mut writer = SearchDbWriter::open(&path).map_err(|e| e.to_string())?;
             writer
-                .insert_scrape(
-                    attach_run_id,
+                .persist_batch_responses_with_scrape(
+                    &batch_clone,
                     &seed_url,
                     duration_ms,
-                    pages.len(),
+                    page_limit,
                     fatal.as_deref(),
                     &pages,
                 )
+                .map_err(|e| e.to_string())
+        })
+        .await
+        .map_err(|e| e.to_string())??;
+    } else {
+        let batch_clone = batch.clone();
+        let path = db_path.to_path_buf();
+        tokio::task::spawn_blocking(move || {
+            let mut writer = SearchDbWriter::open(&path).map_err(|e| e.to_string())?;
+            writer
+                .persist_batch_responses(&batch_clone)
                 .map_err(|e| e.to_string())
         })
         .await
