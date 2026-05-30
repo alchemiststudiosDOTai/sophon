@@ -1,52 +1,86 @@
 # AGENTS.md
 
 ## Project Overview
-- Rust CLI binary (`sophon-cli`) that queries the Brave Search API and prints normalized text results.
-- Provider-agnostic domain layer with a Brave-specific adapter behind a trait boundary.
 
-## Where To Start
-- Harness map (checks, tests, gaps): `HARNESS.md`
+- Rust CLI binary (`sophon-cli`) that queries configured search providers and prints normalized text results.
+- Provider-agnostic domain layer with Brave and Exa adapters behind trait boundaries.
+- Repository process state is a markdown-only control plane under `docs/artifacts/`, `docs/process/`, and `docs/project/`.
+
+## Read First
+
+- Artifact system index: `docs/artifacts/INDEX.md`
+- Process rules: `docs/process/RULES.md` and `docs/process/WORKFLOW.md`
+- Project context: `docs/project/PROJECT_CONTEXT.md`, `docs/project/CONSTRAINTS.md`, `docs/project/ARCHITECTURE.md`, `docs/project/TESTING.md`
+- Current work: `docs/artifacts/active/README.md`, `docs/artifacts/open-issues/README.md`, and the latest `docs/artifacts/memory/MEM-*.md`
+- Harness map: `HARNESS.md`
 - User-facing docs: `README.md` and `docs/`
 
 ## Repository Map
-- `src/main.rs` — CLI entrypoint; wires `cli::args`, `app::search_service`, `providers::brave`, and `transport::http`
-- `src/domain/` — provider-agnostic types (`query.rs`, `result.rs`, `types.rs`, `error.rs`, `provider.rs`)
-- `src/providers/brave/` — Brave-specific DTOs, mapper, config, and `BraveProvider` client
-- `src/transport/` — `HttpClient` trait and `ReqwestHttpClient` adapter
-- `src/app/` — `SearchService` orchestrator (`Box<dyn SearchProvider>`)
-- `src/cli/` — `clap` argument parsing (`args.rs`) and text renderer (`output.rs`)
-- `tests/architecture_test.rs` — source-scan tests enforcing layer boundaries
-- `docs/` — mdBook source: intro, architecture, quickstart
+
+- `src/main.rs` - CLI entrypoint; delegates runtime execution to `sophon_cli::cli::runner::run_from_env`.
+- `src/lib.rs` - library module surface.
+- `src/domain/` - provider-agnostic query, result, type, error, and provider contracts.
+- `src/providers/brave/` - Brave DTOs, mapper, config, and provider client.
+- `src/providers/exa/` - Exa DTOs, mapper, config, and provider client.
+- `src/transport/` - `HttpClient` trait and `ReqwestHttpClient` adapter.
+- `src/app/` - single-provider and fan-out search orchestration.
+- `src/bootstrap/` - provider registry and service construction.
+- `src/cli/` - `clap` args, request construction, runner, and text output rendering.
+- `tests/` - architecture, CI direction, changelog, fan-out CLI, and integration tests.
+- `docs/` - mdBook source plus process, project, and artifact-control docs.
 
 ## Commands
-- `just check` — run formatter check, clippy (with complexity/cognitive lints), tests, and mdBook docs build
-- Windows PowerShell: do **not** run plain `just check`; use `just --shell powershell --shell-arg -Command check` because `just` otherwise looks for `sh`.
-- `cargo test` — run all inline `#[cfg(test)]` unit tests and architecture boundary tests
-- `cargo run -- "<query>"` — run a live web search (requires `BRAVE_API_KEY` in `.env`)
-- `cargo run -- "<query>" --search-type news --limit 3` — run a live news search
 
-## Boundaries
-- **Domain** (`src/domain/`) — pure types and traits; no HTTP, no CLI parsing
-- **Providers** (`src/providers/`) — adapter boundary; Brave DTOs map into domain types
-- **Application** (`src/app/`) — orchestration only
-- **CLI** (`src/cli/`) — arg parsing and output rendering only
+- `just check` - canonical gate: `cargo fmt --check`, clippy with complexity lints, `cargo test`, markdown frontmatter check, and `mdbook build`.
+- `just hygiene` - dependency, duplication, tech-debt, and large-file checks.
+- `cargo test` - run unit, architecture, and integration tests.
+- `cargo run -- "<query>" --provider brave` - run Brave search with `BRAVE_API_KEY`.
+- `cargo run -- "<query>" --provider exa` - run Exa search with `EXA_API_KEY`.
+- `cargo run -- "<query>" --provider all` - query every environment-enabled provider.
+- Windows PowerShell: use `just --shell powershell --shell-arg -Command check` instead of plain `just check`.
+
+## Architecture Boundaries
+
+- Domain (`src/domain/`) stays pure: no HTTP, CLI, app, or provider imports.
+- Transport (`src/transport/`) has no provider, CLI, or app imports.
+- Providers (`src/providers/`) adapt external APIs into domain types and do not import CLI or app layers.
+- Application (`src/app/`) orchestrates domain contracts only; it does not import CLI, bootstrap, providers, or transport.
+- Bootstrap (`src/bootstrap/`) wires provider registry/service construction and does not import CLI.
+- CLI (`src/cli/`) owns parsing, request construction, runner behavior, and text rendering.
+- Boundary tests in `tests/architecture_test.rs` enforce these contracts.
+
+## Artifact Workflow
+
+- Core rule: No Charter = No Code.
+- Pick exactly one primary mode: Exploration, Bug Fix, Refactor, Feature, QA / Verification, Documentation, or Release Prep.
+- Exploration ends with `docs/artifacts/explorations/EXP-YYYYMMDD-short-slug.md`.
+- Execution starts with `docs/artifacts/active/CHARTER-YYYYMMDD-short-slug.md`.
+- During execution, update `docs/artifacts/active/EXEC-YYYYMMDD-short-slug.md`.
+- Before claiming success, create `docs/artifacts/evidence/EVID-YYYYMMDD-short-slug.md`.
+- End every real work session with `docs/artifacts/memory/MEM-YYYYMMDD-short-slug.md`.
+- Durable decisions require `docs/artifacts/decisions/ADR-0000-short-slug.md`.
 
 ## Sources Of Truth
-- `HARNESS.md` — current harness map and validation chain
-- `justfile` — canonical local check gate
-- `Cargo.toml` — dependencies and edition 2024
 
-## Observability
-- Structured logging is provided by `tracing` (with `tracing-subscriber` formatting).
-- Log output is written to **stderr** so stdout remains clean for CLI results.
-- Control verbosity via the `RUST_LOG` environment variable (e.g. `RUST_LOG=debug`).
-- Key spans: `main` (startup), `SearchService::search` (orchestration), `BraveProvider::search` / `ExaProvider::search` (provider adapters), `ReqwestHttpClient::{get_json,post_json}` (transport).
+- `HARNESS.md` - validation chain, test layers, CI, and known harness gaps.
+- `justfile` - canonical local check and hygiene commands.
+- `Cargo.toml` - package metadata, dependencies, Rust edition, and integration test targets.
+- `docs/process/` - workflow rules and handoff protocol.
+- `docs/project/` - project context, constraints, architecture, and testing guides.
+- `.github/workflows/validate-agents.yml` - CI validation path and command order.
 
 ## Change Guardrails
-- Run `just check` before committing. In Windows PowerShell, run `just --shell powershell --shell-arg -Command check` instead of plain `just check`.
-- Keep domain types provider-agnostic; add provider-specific logic in `src/providers/`.
-- Architecture boundary tests enforce import direction; if you add a cross-layer `use`, update boundaries intentionally and adjust `tests/architecture_test.rs` if needed.
+
+- Run `just check` before committing. If skipped, document why in the evidence pack.
+- Keep `AGENTS.md` a compact map; move detailed process text into `docs/process/` or `docs/artifacts/`.
+- New tracked Markdown files must pass `python3 scripts/check_markdown_frontmatter.py` unless explicitly exempted in that script.
+- Keep domain types provider-agnostic; put provider-specific behavior in `src/providers/`.
+- If a boundary change is intentional, update `tests/architecture_test.rs`, `HARNESS.md`, and relevant docs together.
+- Do not stage secrets, `.env`, generated build output, or `.DS_Store`.
 
 ## Validation Checklist
-- [ ] `just check` passes, or on Windows PowerShell `just --shell powershell --shell-arg -Command check` passes (fmt, clippy, tests, docs build)
-- [ ] Every path listed above still exists
+
+- [ ] `just check` passes, or the skipped/failed check is documented in evidence.
+- [ ] Every concrete path listed in this file exists; naming patterns point to existing directories.
+- [ ] New staged Markdown files satisfy the frontmatter checker.
+- [ ] Evidence and session memory artifacts exist for real work sessions.
