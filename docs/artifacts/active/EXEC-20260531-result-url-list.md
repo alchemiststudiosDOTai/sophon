@@ -19,7 +19,7 @@ ontology_relations:
 | Date | 2026-05-31 |
 | Owner | Codex |
 | Related Artifacts | `docs/artifacts/active/CHARTER-20260531-result-url-list.md`, `docs/artifacts/evidence/EVID-20260531-result-url-list.md`, `docs/artifacts/memory/MEM-20260531-result-url-implementation.md` |
-| Related Files | `src/cli/output.rs` |
+| Related Files | `src/cli/output.rs`, `CHANGELOG.md` |
 
 ## Starting Point
 
@@ -53,6 +53,13 @@ Implementation completed in this session. Evidence is recorded in `docs/artifact
 - Result: Completed.
 - Evidence: `cargo test render_text_appends_url_list_at_end` passed. `just check` passed, including `cargo fmt --check`, clippy with warnings denied, `cargo test`, `python3 scripts/check_markdown_frontmatter.py`, and `mdbook build`.
 
+### Step 4
+
+- Action: Add the assigned draft PR number to the changelog before merge.
+- Files touched: `CHANGELOG.md`, `docs/artifacts/active/EXEC-20260531-result-url-list.md`, `docs/artifacts/evidence/EVID-20260531-result-url-list.md`, `docs/artifacts/memory/MEM-20260531-result-url-implementation.md`
+- Result: Completed.
+- Evidence: PR `#20` is now referenced in `CHANGELOG.md`; focused changelog and markdown checks passed.
+
 ## Deviations From Charter
 
 - Rollback commit was not created. The worktree already contained uncommitted documentation/artifact changes before implementation started, so creating a rollback commit would have committed work outside this execution scope.
@@ -66,3 +73,4 @@ Implementation completed in this session. Evidence is recorded in `docs/artifact
 - `render_fanout_text` needed no changes.
 - Targeted test name: `render_text_appends_url_list_at_end`.
 - Canonical gate outcome: `just check` passed.
+- Changelog follow-up validation: `cargo test --test changelog_test` and `python3 scripts/check_markdown_frontmatter.py` passed.

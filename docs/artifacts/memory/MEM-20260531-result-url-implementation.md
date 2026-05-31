@@ -22,7 +22,7 @@ ontology_relations:
 | Date | 2026-05-31 |
 | Owner | Codex |
 | Related Artifacts | `docs/artifacts/active/CHARTER-20260531-result-url-list.md`, `docs/artifacts/active/EXEC-20260531-result-url-list.md`, `docs/artifacts/evidence/EVID-20260531-result-url-list.md` |
-| Related Files | `src/cli/output.rs` |
+| Related Files | `src/cli/output.rs`, `CHANGELOG.md` |
 
 ## Decisions
 
@@ -31,6 +31,7 @@ ontology_relations:
 - Added a local `result_url` helper rather than adding methods to domain result types.
 - Appended a final `URLs:` block only when at least one result has a non-empty trimmed URL.
 - Left `render_fanout_text` unchanged because it already delegates each successful provider response to `render_text`.
+- Added PR `#20` to `CHANGELOG.md` before merge.
 
 ## Constraints
 
@@ -44,6 +45,7 @@ ontology_relations:
 
 - `src/cli/output.rs`: `render_text` now appends a final `URLs:` block after result details, using a local `result_url` helper and skipping empty summary entries.
 - `src/cli/output.rs`: added `render_text_appends_url_list_at_end` to prove final block shape, order, and whitespace-only URL skipping.
+- `CHANGELOG.md`: added the unreleased result URL list entry with PR `#20`.
 - `docs/artifacts/active/EXEC-20260531-result-url-list.md`: execution log for this implementation session.
 - `docs/artifacts/evidence/EVID-20260531-result-url-list.md`: validation evidence.
 - `docs/artifacts/memory/MEM-20260531-result-url-implementation.md`: this memory record.
@@ -54,6 +56,7 @@ ontology_relations:
 - Focused renderer test passed: `cargo test render_text_appends_url_list_at_end`.
 - Full Rust suite passed through `cargo test` during `just check`.
 - Canonical gate passed: `just check`.
+- Changelog coverage passed after the PR-number follow-up: `cargo test --test changelog_test`.
 - Final markdown frontmatter check passed: `python3 scripts/check_markdown_frontmatter.py`.
 
 ## Open Issues
