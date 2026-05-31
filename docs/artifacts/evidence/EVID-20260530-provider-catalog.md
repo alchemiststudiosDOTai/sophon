@@ -22,7 +22,7 @@ ontology_relations:
 | Date | 2026-05-30 |
 | Owner | Codex |
 | Related Artifacts | `docs/artifacts/active/CHARTER-20260530-provider-catalog.md`, `docs/artifacts/active/EXEC-20260530-provider-catalog.md`, `docs/artifacts/decisions/ADR-0001-provider-catalog.md` |
-| Related Files | `src/bootstrap/provider_catalog.rs`, `src/bootstrap/provider_registry.rs`, `src/bootstrap/mod.rs`, `src/cli/args.rs`, `src/cli/runner.rs`, `tests/architecture_test.rs`, `tests/integration/provider_registry_test.rs`, `tests/integration/cli_test.rs`, `README.md`, `docs/intro.md`, `docs/quickstart.md`, `docs/project/ARCHITECTURE.md`, `docs/architecture.md`, `docs/dependency-architecture-map.md`, `docs/dependency-architecture-map.html`, `HARNESS.md` |
+| Related Files | `src/bootstrap/provider_catalog.rs`, `src/bootstrap/provider_registry.rs`, `src/bootstrap/mod.rs`, `src/cli/args.rs`, `src/cli/runner.rs`, `tests/architecture_test.rs`, `tests/integration/provider_registry_test.rs`, `tests/integration/cli_test.rs`, `README.md`, `CHANGELOG.md`, `docs/intro.md`, `docs/quickstart.md`, `docs/project/ARCHITECTURE.md`, `docs/architecture.md`, `docs/dependency-architecture-map.md`, `docs/dependency-architecture-map.html`, `HARNESS.md` |
 
 ## Claim Being Proven
 
@@ -40,6 +40,7 @@ Provider identity, CLI token lookup, display names, environment variable names, 
 - `tests/architecture_test.rs`
 - `tests/integration/provider_registry_test.rs`
 - `tests/integration/cli_test.rs`
+- `CHANGELOG.md`
 - `README.md`
 - `docs/intro.md`
 - `docs/quickstart.md`
@@ -58,6 +59,7 @@ Provider identity, CLI token lookup, display names, environment variable names, 
 - Updated `src/cli/runner.rs` to run `CliProvider::Single(ProviderId)` directly and render about text from catalog display names.
 - Added architecture and integration tests for catalog ownership, catalog metadata, CLI token parsing, and unknown-provider errors.
 - Updated README, mdBook docs, project architecture docs, dependency map docs, and harness source index to point provider registration at the catalog.
+- Added draft PR `#19` to `CHANGELOG.md` so the merged-PR coverage test remains satisfied after the PR lands.
 
 ## Commands Run
 
@@ -75,6 +77,9 @@ python3 scripts/check_markdown_frontmatter.py
 mdbook build
 cargo fmt --check
 cargo run -- --help
+cargo test --test changelog_test
+python3 scripts/check_markdown_frontmatter.py
+just check
 just check
 just check
 rg -n 'BraveConfig::from_env|ExaConfig::from_env|BraveProvider::new|ExaProvider::new|BRAVE_API_KEY|EXA_API_KEY' src/bootstrap -g '*.rs'
@@ -96,6 +101,9 @@ rg -n 'ProviderId::Brave|ProviderId::Exa' src/cli/runner.rs src/cli/args.rs
 | mdBook | `mdbook build` | Passed | HTML written to `book`. |
 | Formatting | `cargo fmt --check` | Passed | No output. |
 | CLI help provider values | `cargo run -- --help` | Passed | Help lists `[possible values: brave, exa, all]` for `--provider`. |
+| Changelog coverage | `cargo test --test changelog_test` | Passed | Passes after adding draft PR `#19` to `CHANGELOG.md`; local GitHub API fetch is skipped if unavailable outside CI. |
+| Markdown frontmatter, PR-readiness follow-up | `python3 scripts/check_markdown_frontmatter.py` | Passed | Confirms the artifact updates still satisfy tracked Markdown frontmatter requirements. |
+| Canonical gate, PR-readiness follow-up | `just check` | Passed | `cargo fmt --check`, clippy, all tests, changelog coverage, frontmatter, and mdBook passed after the changelog entry was added. |
 | Canonical gate, sandboxed | `just check` | Failed for environment reason | `cargo test` failed in `transport::http::tests::test_post_json_decodes_success_response` because sandboxing denied binding `127.0.0.1:0`. |
 | Canonical gate, outside sandbox | `just check` | Passed | `cargo fmt --check`, clippy, all tests, frontmatter, and mdBook passed. |
 | Bootstrap wiring source scan | `rg ... src/bootstrap -g '*.rs'` | Passed with expected locations | Provider construction/env strings are in `provider_catalog.rs`; remaining env strings in `provider_registry.rs` are test-only fixtures. |
@@ -108,6 +116,7 @@ rg -n 'ProviderId::Brave|ProviderId::Exa' src/cli/runner.rs src/cli/args.rs
 2. Reviewed CLI parsing to confirm `CliProvider` has only `Single(ProviderId)` and `All`; real providers are not duplicated as CLI enum variants.
 3. Reviewed `--help` output to confirm provider possible values still come from the catalog-backed parser.
 4. Reviewed docs search results for stale provider-registration guidance and updated the mdBook dependency map that is embedded in docs.
+5. Reviewed draft PR `#19` metadata and added the assigned PR number to `CHANGELOG.md` before marking the PR ready.
 
 ## Logs / Output
 

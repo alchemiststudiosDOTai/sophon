@@ -25,7 +25,7 @@ ontology_relations:
 | Date | 2026-05-30 |
 | Owner | Codex |
 | Related Artifacts | `docs/artifacts/explorations/EXP-20260530-provider-catalog-duplication.md`, `docs/artifacts/memory/MEM-20260530-provider-catalog-research.md`, `docs/artifacts/decisions/ADR-0001-provider-catalog.md`, `docs/artifacts/evidence/EVID-20260530-provider-catalog.md`, `docs/artifacts/memory/MEM-20260530-provider-catalog-implementation.md` |
-| Related Files | `src/bootstrap/provider_registry.rs`, `src/bootstrap/mod.rs`, `src/cli/args.rs`, `src/cli/runner.rs`, `tests/architecture_test.rs`, `tests/integration/provider_registry_test.rs`, `tests/integration/cli_test.rs`, `README.md`, `docs/intro.md`, `docs/quickstart.md`, `docs/project/ARCHITECTURE.md`, `docs/architecture.md`, `HARNESS.md` |
+| Related Files | `src/bootstrap/provider_registry.rs`, `src/bootstrap/mod.rs`, `src/cli/args.rs`, `src/cli/runner.rs`, `tests/architecture_test.rs`, `tests/integration/provider_registry_test.rs`, `tests/integration/cli_test.rs`, `README.md`, `CHANGELOG.md`, `docs/intro.md`, `docs/quickstart.md`, `docs/project/ARCHITECTURE.md`, `docs/architecture.md`, `HARNESS.md` |
 
 ## Mission
 
@@ -63,6 +63,7 @@ Feature
 - Add source-scan guardrails that forbid duplicated provider identities in CLI and bootstrap wiring outside the catalog and provider config modules.
 - Update provider registry and CLI integration tests to assert catalog-backed behavior.
 - Clean up user and maintainer docs so provider registration points to the catalog as the single source of truth.
+- Add this PR's assigned number to `CHANGELOG.md` before merge so changelog coverage remains satisfied after landing.
 - Update architecture and harness docs if their current provider registry contract becomes stale.
 
 ### Out of Scope
