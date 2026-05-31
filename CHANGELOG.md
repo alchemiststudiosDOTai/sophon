@@ -30,6 +30,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Repository operating surfaces: `.env.example`, CODEOWNERS, issue and PR templates, label definitions, AGENTS validation CI, and a `sophon-cli` agent skill. (#6)
 - Hygiene checks for file-size limits and tech-debt markers (TODO/FIXME) in the canonical `just check` gate and CI workflow. (#10)
 - Integration test suite for app-layer fan-out, provider registry, and CLI argument parsing. (#12)
+- Changelog coverage test that verifies merged PRs are referenced in `CHANGELOG.md`. (#17)
+- Markdown artifact control-plane docs, a compact `AGENTS.md` map, and `.DS_Store` cleanup. (#18)
 
 ### Changed
 
