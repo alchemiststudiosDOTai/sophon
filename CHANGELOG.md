@@ -32,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Integration test suite for app-layer fan-out, provider registry, and CLI argument parsing. (#12)
 - Changelog coverage test that verifies merged PRs are referenced in `CHANGELOG.md`. (#17)
 - Markdown artifact control-plane docs, a compact `AGENTS.md` map, and `.DS_Store` cleanup. (#18)
+- Bootstrap provider catalog as the single source of truth for provider identity, CLI tokens, environment variable metadata, stable ordering, and production provider construction. (#19)
 
 ### Changed
 

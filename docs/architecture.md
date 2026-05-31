@@ -201,12 +201,14 @@ Unsupported Exa inputs are rejected at runtime instead of being ignored: `Images
 
 ## Runtime provider selection
 
-`src/main.rs` remains a thin process entrypoint. It initializes process-level concerns and delegates to `src/cli/runner.rs`, which owns user-surface branching, query normalization, output rendering, and exit-code calculation. Concrete provider construction remains in `src/bootstrap/provider_registry.rs`, where typed provider config, HTTP transport, provider clients, `SearchService`, and `FanoutSearchService` are composed.
+`src/main.rs` remains a thin process entrypoint. It initializes process-level concerns and delegates to `src/cli/runner.rs`, which owns user-surface branching, query normalization, output rendering, and exit-code calculation.
 
-- `--provider brave` uses `ProviderRegistry::build(ProviderId::Brave)`; the registry includes it only when `BRAVE_API_KEY` is configured
-- `--provider exa` uses `ProviderRegistry::build(ProviderId::Exa)`; the registry includes it only when `EXA_API_KEY` is configured
-- `--provider all` uses `ProviderRegistry::build_all_enabled()` to build a `FanoutSearchService` from every configured provider in stable order
-- omitting `--provider` still selects Brave
+Real provider identity and production construction live in `src/bootstrap/provider_catalog.rs`. The catalog declares each real provider's `ProviderId`, CLI token, display name, environment variable name, stable order, and production builder. `src/bootstrap/provider_registry.rs` consumes that catalog to register configured providers and compose `SearchService` or `FanoutSearchService`.
+
+- `--provider brave` resolves the catalog token to `ProviderId::Brave`; the registry includes it only when `BRAVE_API_KEY` is configured
+- `--provider exa` resolves the catalog token to `ProviderId::Exa`; the registry includes it only when `EXA_API_KEY` is configured
+- `--provider all` is a CLI-only aggregate mode that uses `ProviderRegistry::build_all_enabled()` to build a `FanoutSearchService` from every configured real provider in catalog order
+- omitting `--provider` still selects the first catalog provider, currently Brave
 
 `FanoutSearchService` is application-layer orchestration over multiple domain `SearchProvider` trait objects. It does not render output; fan-out rendering remains in the CLI layer through `render_fanout_text`.
 

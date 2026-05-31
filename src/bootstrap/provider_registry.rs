@@ -2,44 +2,42 @@ use std::collections::HashMap;
 use std::fmt;
 
 use crate::app::{fanout_search_service::FanoutSearchService, search_service::SearchService};
-use crate::domain::SearchProvider;
-use crate::providers::{
-    brave::{client::BraveProvider, config::BraveConfig},
-    exa::{client::ExaProvider, config::ExaConfig},
-};
-use crate::transport::http::ReqwestHttpClient;
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum ProviderId {
-    Brave,
-    Exa,
-}
-
-impl fmt::Display for ProviderId {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            ProviderId::Brave => formatter.write_str("brave"),
-            ProviderId::Exa => formatter.write_str("exa"),
-        }
-    }
-}
-
-pub type ProviderBuilder = Box<dyn Fn() -> Box<dyn SearchProvider> + Send + Sync>;
+use crate::bootstrap::provider_catalog;
+pub use crate::bootstrap::provider_catalog::{ProviderBuilder, ProviderId};
 
 pub struct ProviderRegistry {
     builders: HashMap<ProviderId, ProviderBuilder>,
 }
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug)]
 pub enum BuildSearchServiceError {
-    #[error("provider `{provider}` is unavailable; configured providers: {available:?}")]
     ProviderUnavailable {
         provider: ProviderId,
         available: Vec<ProviderId>,
     },
-    #[error("no configured providers; set BRAVE_API_KEY and/or EXA_API_KEY")]
     NoProvidersAvailable,
 }
+
+impl fmt::Display for BuildSearchServiceError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            BuildSearchServiceError::ProviderUnavailable {
+                provider,
+                available,
+            } => write!(
+                formatter,
+                "provider `{provider}` is unavailable; configured providers: {available:?}"
+            ),
+            BuildSearchServiceError::NoProvidersAvailable => write!(
+                formatter,
+                "no configured providers; set {}",
+                provider_catalog::provider_env_var_hint()
+            ),
+        }
+    }
+}
+
+impl std::error::Error for BuildSearchServiceError {}
 
 impl ProviderRegistry {
     pub fn empty() -> Self {
@@ -51,28 +49,10 @@ impl ProviderRegistry {
     pub fn production_from_env() -> Self {
         let mut registry = Self::empty();
 
-        match BraveConfig::from_env() {
-            Ok(config) => {
-                registry.register(
-                    ProviderId::Brave,
-                    Box::new(move || {
-                        Box::new(BraveProvider::new(ReqwestHttpClient::new(), config.clone()))
-                    }),
-                );
+        for entry in provider_catalog::provider_catalog() {
+            if let Ok(builder) = entry.production_builder() {
+                registry.register(entry.id(), builder);
             }
-            Err(std::env::VarError::NotPresent | std::env::VarError::NotUnicode(_)) => {}
-        }
-
-        match ExaConfig::from_env() {
-            Ok(config) => {
-                registry.register(
-                    ProviderId::Exa,
-                    Box::new(move || {
-                        Box::new(ExaProvider::new(ReqwestHttpClient::new(), config.clone()))
-                    }),
-                );
-            }
-            Err(std::env::VarError::NotPresent | std::env::VarError::NotUnicode(_)) => {}
         }
 
         registry
@@ -83,8 +63,9 @@ impl ProviderRegistry {
     }
 
     pub fn available_providers(&self) -> Vec<ProviderId> {
-        [ProviderId::Brave, ProviderId::Exa]
-            .into_iter()
+        provider_catalog::provider_catalog()
+            .iter()
+            .map(|entry| entry.id())
             .filter(|id| self.builders.contains_key(id))
             .collect()
     }
@@ -125,7 +106,7 @@ impl ProviderRegistry {
 mod tests {
     use super::*;
     use crate::domain::{
-        ProviderCapabilities, SearchError, SearchQuery, SearchResponse, SearchType,
+        ProviderCapabilities, SearchError, SearchProvider, SearchQuery, SearchResponse, SearchType,
     };
     use async_trait::async_trait;
     use std::ffi::OsString;

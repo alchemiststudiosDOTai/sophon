@@ -271,9 +271,9 @@ code { color: #e2e8f0; }
 
         <rect class="node-bg" x="620" y="395" width="240" height="70"/>
         <rect class="node cloud" x="620" y="395" width="240" height="70"/>
-        <text class="title" x="640" y="420">bootstrap::provider_registry</text>
-        <text class="sub" x="640" y="438">ProviderRegistry + ProviderId</text>
-        <text class="sub" x="640" y="453">builds services and adapters</text>
+        <text class="title" x="640" y="420">bootstrap::catalog/registry</text>
+        <text class="sub" x="640" y="438">ProviderCatalog + Registry</text>
+        <text class="sub" x="640" y="453">wires providers and services</text>
 
         <rect class="node-bg" x="310" y="560" width="240" height="60"/>
         <rect class="node backend" x="310" y="560" width="240" height="60"/>
@@ -348,8 +348,8 @@ code { color: #e2e8f0; }
     <div class="card">
       <div class="card-header"><div class="card-dot amber"></div><h3>Composition</h3></div>
       <ul>
-        <li>* `ProviderRegistry` is the concrete composition root.</li>
-        <li>* It builds app services from Brave/Exa and reqwest transport.</li>
+        <li>* `provider_catalog` owns real provider identity and builders.</li>
+        <li>* `ProviderRegistry` builds configured app services from catalog entries.</li>
         <li>* The CLI asks for services; it does not construct providers.</li>
       </ul>
     </div>

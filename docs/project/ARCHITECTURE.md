@@ -30,7 +30,7 @@ ontology_relations:
 |---|---|---|
 | Entrypoint | `src/main.rs` | Start async runtime and delegate to `cli::runner::run_from_env`. |
 | CLI | `src/cli/` | Parse args, build requests, run CLI workflow, render text output. |
-| Bootstrap | `src/bootstrap/` | Register providers and build services. |
+| Bootstrap | `src/bootstrap/` | Own the provider catalog, register configured providers, and build services. |
 | Application | `src/app/` | Orchestrate single-provider and fan-out search behavior. |
 | Domain | `src/domain/` | Define provider-agnostic query, result, type, error, and provider contracts. |
 | Providers | `src/providers/brave/`, `src/providers/exa/` | Map Brave/Exa APIs into domain contracts. |
@@ -88,7 +88,7 @@ The app layer depends on domain contracts, not concrete provider or transport im
 | Shared result/query shape | `src/domain/` | Preserve provider-agnostic naming. |
 | CLI flag or command behavior | `src/cli/args.rs`, `src/cli/request.rs`, `src/cli/runner.rs` | Keep parsing, request construction, and execution separated. |
 | Output formatting | `src/cli/output.rs` | Keep presentation out of domain/app layers. |
-| Provider registration | `src/bootstrap/provider_registry.rs` | Update integration tests when adding providers. |
+| Provider registration | `src/bootstrap/provider_catalog.rs` | Add real provider identity, CLI token, display name, env var, stable order, and production builder here. Update registry and CLI integration tests when adding providers. |
 | Validation gate | `justfile`, `HARNESS.md`, `.github/workflows/validate-agents.yml` | Keep local and CI docs aligned. |
 
 ## Where Not To Make Changes
