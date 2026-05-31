@@ -18,7 +18,7 @@ ontology_relations:
 
 # Current Dependency Architecture Map
 
-This is the current/actual Rust import shape after the runtime organization refactor: `src/main.rs` delegates to the CLI runner, the CLI surface performs user-facing branching and rendering, bootstrap owns concrete construction, app services orchestrate domain provider traits, and domain remains the bottom layer.
+This is the current/actual Rust import shape after the runtime organization refactor: `src/main.rs` delegates to the CLI runner, the CLI surface performs user-facing branching and rendering, bootstrap owns the provider catalog plus registry composition, app services orchestrate domain provider traits, and domain remains the bottom layer.
 
 Read every dependency as:
 

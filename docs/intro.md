@@ -18,6 +18,7 @@ A provider-agnostic Rust CLI that queries Brave Search, Exa, or every environmen
 
 - Parses CLI arguments
 - Builds a provider-agnostic `SearchQuery`
+- Resolves real provider tokens through the bootstrap provider catalog
 - Delegates to a single `SearchProvider` for `--provider brave` or `--provider exa`
 - Fans out sequentially to all environment-enabled providers for `--provider all`
 - Renders single-provider or per-provider fan-out results as human-readable text
@@ -27,6 +28,8 @@ A provider-agnostic Rust CLI that queries Brave Search, Exa, or every environmen
 - `src/domain/` — pure types and traits; no HTTP, no CLI
 - `src/transport/` — `HttpClient` trait + `reqwest` adapter
 - `src/providers/brave/` — Brave-specific DTOs, mapper, and client
+- `src/providers/exa/` — Exa-specific DTOs, mapper, and client
+- `src/bootstrap/` — provider catalog, provider registry, and service construction
 - `src/app/` — `SearchService` and `FanoutSearchService` orchestrators
 - `src/cli/` — argument parsing and output rendering
 - `tests/architecture_test.rs` — boundary tests enforcing layer isolation

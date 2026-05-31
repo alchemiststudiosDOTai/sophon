@@ -47,6 +47,8 @@ cargo run -- "rust async trait" --provider all
 
 `--provider all` includes only providers enabled by the current environment variables. If neither `BRAVE_API_KEY` nor `EXA_API_KEY` is available, the command exits non-zero and prints `no configured providers; set BRAVE_API_KEY and/or EXA_API_KEY`.
 
+The real provider tokens and their environment variables are declared in `src/bootstrap/provider_catalog.rs`. `all` is a CLI-only mode, not a real provider.
+
 ## Search news
 
 ```bash
