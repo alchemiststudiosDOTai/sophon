@@ -1,6 +1,7 @@
 .env
 .DS_Store
 .artifacts/
+__pycache__/
 
 
 # Added by cargo
