@@ -1,6 +1,7 @@
 use async_trait::async_trait;
-use sophon_cli::bootstrap::provider_registry::{
-    BuildSearchServiceError, ProviderBuilder, ProviderId, ProviderRegistry,
+use sophon_cli::bootstrap::{
+    provider_catalog::{ProviderBuilder, ProviderId, provider_catalog, provider_env_var_hint},
+    provider_registry::{BuildSearchServiceError, ProviderRegistry},
 };
 use sophon_cli::domain::{
     ProviderCapabilities, SearchError, SearchProvider, SearchQuery, SearchResponse, SearchType,
@@ -100,6 +101,22 @@ fn search_query(text: &str) -> SearchQuery {
         language: None,
         time_range: None,
     }
+}
+
+#[test]
+fn provider_catalog_declares_real_providers_in_stable_order() {
+    let catalog_entries = provider_catalog();
+
+    assert_eq!(catalog_entries.len(), 2);
+    assert_eq!(catalog_entries[0].id(), ProviderId::Brave);
+    assert_eq!(catalog_entries[0].cli_token(), "brave");
+    assert_eq!(catalog_entries[0].display_name(), "Brave Search");
+    assert_eq!(catalog_entries[0].env_var_name(), "BRAVE_API_KEY");
+    assert_eq!(catalog_entries[1].id(), ProviderId::Exa);
+    assert_eq!(catalog_entries[1].cli_token(), "exa");
+    assert_eq!(catalog_entries[1].display_name(), "Exa");
+    assert_eq!(catalog_entries[1].env_var_name(), "EXA_API_KEY");
+    assert_eq!(provider_env_var_hint(), "BRAVE_API_KEY and/or EXA_API_KEY");
 }
 
 #[test]

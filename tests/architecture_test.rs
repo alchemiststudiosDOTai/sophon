@@ -60,6 +60,79 @@ fn test_render_text_only_called_from_cli() {
 }
 
 #[test]
+fn test_provider_catalog_is_provider_wiring_source_of_truth() {
+    assert!(
+        Path::new("src/bootstrap/provider_catalog.rs").exists(),
+        "provider identity and production wiring must live in src/bootstrap/provider_catalog.rs"
+    );
+
+    let bootstrap_mod = read_repo_file("src/bootstrap/mod.rs");
+    assert!(
+        bootstrap_mod.contains("pub mod provider_catalog;"),
+        "bootstrap must expose the provider catalog module"
+    );
+
+    let catalog = read_repo_file("src/bootstrap/provider_catalog.rs");
+    for required_pattern in [
+        "pub enum ProviderId",
+        "ProviderCatalogEntry",
+        "PROVIDER_CATALOG",
+        "BraveProvider::new",
+        "ExaProvider::new",
+        "BRAVE_API_KEY",
+        "EXA_API_KEY",
+    ] {
+        assert!(
+            catalog.contains(required_pattern),
+            "provider catalog must contain provider wiring pattern {required_pattern:?}"
+        );
+    }
+
+    let registry = read_repo_file("src/bootstrap/provider_registry.rs");
+    let registry_impl = implementation_region(&registry);
+    for forbidden_pattern in [
+        "pub enum ProviderId",
+        "BraveConfig::from_env",
+        "ExaConfig::from_env",
+        "BraveProvider::new",
+        "ExaProvider::new",
+        "[ProviderId::Brave, ProviderId::Exa]",
+        "BRAVE_API_KEY and/or EXA_API_KEY",
+    ] {
+        assert!(
+            !registry_impl.contains(forbidden_pattern),
+            "provider registry wiring must come from provider_catalog, but found {forbidden_pattern:?}"
+        );
+    }
+
+    let cli_args = read_repo_file("src/cli/args.rs");
+    let cli_args_impl = implementation_region(&cli_args);
+    for forbidden_pattern in [
+        "CliProvider {\n    Brave",
+        "ValueEnum)]\npub enum CliProvider",
+    ] {
+        assert!(
+            !cli_args_impl.contains(forbidden_pattern),
+            "CLI provider parsing must resolve real providers from provider_catalog; found {forbidden_pattern:?}"
+        );
+    }
+
+    let runner = read_repo_file("src/cli/runner.rs");
+    let runner_impl = implementation_region(&runner);
+    for forbidden_pattern in [
+        "CliProvider::Brave",
+        "CliProvider::Exa",
+        "ProviderId::Brave",
+        "ProviderId::Exa",
+    ] {
+        assert!(
+            !runner_impl.contains(forbidden_pattern),
+            "CLI runner must use catalog-backed provider IDs; found {forbidden_pattern:?}"
+        );
+    }
+}
+
+#[test]
 fn test_t001_cli_request_module_import_contract() {
     let cli_mod = read_repo_file("src/cli/mod.rs");
     assert!(
@@ -230,6 +303,10 @@ fn read_repo_file(path: &str) -> String {
     fs::read_to_string(path).unwrap_or_else(|error| {
         panic!("Expected {path} to exist for import-organization contract test: {error}")
     })
+}
+
+fn implementation_region(content: &str) -> &str {
+    content.split("#[cfg(test)]").next().unwrap_or(content)
 }
 
 fn visit_rust_files(dir: &str, callback: &dyn Fn(&Path, &str)) {

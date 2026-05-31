@@ -1,6 +1,7 @@
 use clap::Parser;
 
-use crate::bootstrap::provider_registry::{ProviderId, ProviderRegistry};
+use crate::bootstrap::provider_catalog::{self, ProviderId};
+use crate::bootstrap::provider_registry::ProviderRegistry;
 use crate::cli::args::{CliArgs, CliProvider};
 use crate::cli::output::{render_fanout_text, render_text};
 use crate::cli::request::build_search_query;
@@ -29,8 +30,9 @@ pub async fn run(args: CliArgs) -> i32 {
     let registry = ProviderRegistry::production_from_env();
 
     match args.provider {
-        CliProvider::Brave => run_single_provider(&registry, ProviderId::Brave, query).await,
-        CliProvider::Exa => run_single_provider(&registry, ProviderId::Exa, query).await,
+        CliProvider::Single(provider_id) => {
+            run_single_provider(&registry, provider_id, query).await
+        }
         CliProvider::All => run_all_enabled(&registry, query).await,
     }
 }
@@ -43,7 +45,12 @@ fn print_about() {
     println!("across vast distances. This tiny CLI delegates its heavy lifting to");
     println!("distant search APIs the same way.");
     println!();
-    println!("Currently supports Brave Search (web, news, images, video) and Exa.");
+    println!(
+        "Currently supports {}.",
+        provider_catalog::provider_display_names()
+            .collect::<Vec<_>>()
+            .join(" and ")
+    );
 }
 
 async fn run_single_provider(

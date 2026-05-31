@@ -140,7 +140,8 @@ Ordered list of hygiene checks as executed by the hygiene entry point:
 | `docs/` | mdBook source: intro, architecture, quickstart |
 | `book.toml` | mdBook configuration |
 | `Cargo.toml` | Project manifest, dependencies, edition 2024, cargo-husky hook installer |
-| `src/bootstrap/provider_registry.rs` | Built-in provider registry and service construction tests |
+| `src/bootstrap/provider_catalog.rs` | Built-in provider identity, CLI tokens, env vars, stable order, and production builders |
+| `src/bootstrap/provider_registry.rs` | Registry construction from the provider catalog and service composition tests |
 | `src/providers/brave/mapper.rs` | 4 unit tests for DTO→domain mapping |
 | `src/providers/brave/client.rs` | 1 mock-HTTP unit test for Brave provider |
 | `src/app/search_service.rs` | 1 mock-provider unit test for SearchService |

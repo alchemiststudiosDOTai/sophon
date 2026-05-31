@@ -64,9 +64,14 @@ sophon-cli "rust async trait" --provider all
 
 ## Supported providers
 
+Real provider tokens:
+
 - `brave` for web, news, images, and video search
 - `exa` for Exa search results mapped into the shared domain model
-- `all` to query every configured provider in stable order and print per-provider failures when one provider rejects or fails a request
+
+`all` is a CLI-only selection mode. It queries every configured real provider in catalog order and prints per-provider failures when one provider rejects or fails a request.
+
+Maintainers add or change provider identity, display names, environment variable names, stable ordering, and production wiring in `src/bootstrap/provider_catalog.rs`.
 
 ## Docs
 

@@ -2,6 +2,7 @@
 mod cli;
 
 use clap::Parser;
+use sophon_cli::bootstrap::provider_catalog::ProviderId;
 use sophon_cli::cli::args::{CliArgs, CliProvider, CliSafeSearch, CliSearchType};
 
 #[test]
@@ -88,6 +89,29 @@ fn cli_with_explicit_arguments_parses_correctly() {
     assert_eq!(args.safe_search, Some(CliSafeSearch::Strict));
     assert_eq!(args.country.as_deref(), Some("US"));
     assert_eq!(args.language.as_deref(), Some("en"));
+}
+
+#[test]
+fn cli_unknown_provider_fails_at_parse_time_with_catalog_tokens_and_all() {
+    let error = CliArgs::try_parse_from(["sophon-cli", "rust", "--provider", "unknown"])
+        .expect_err("unknown provider should fail")
+        .to_string();
+
+    assert!(error.contains("invalid value 'unknown'"));
+    assert!(error.contains("brave"));
+    assert!(error.contains("exa"));
+    assert!(error.contains("all"));
+}
+
+#[test]
+fn cli_real_provider_tokens_parse_to_catalog_provider_ids() {
+    let brave_args = CliArgs::try_parse_from(["sophon-cli", "rust", "--provider", "brave"])
+        .expect("brave provider parses");
+    assert_eq!(brave_args.provider, CliProvider::Single(ProviderId::Brave));
+
+    let exa_args = CliArgs::try_parse_from(["sophon-cli", "rust", "--provider", "exa"])
+        .expect("exa provider parses");
+    assert_eq!(exa_args.provider, CliProvider::Single(ProviderId::Exa));
 }
 
 fn assert_explicit_provider_unavailable(output: std::process::Output, provider: &str) {
