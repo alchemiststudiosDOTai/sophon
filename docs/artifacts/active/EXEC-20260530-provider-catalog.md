@@ -21,7 +21,7 @@ ontology_relations:
 | Date | 2026-05-30 |
 | Owner | Codex |
 | Related Artifacts | `docs/artifacts/active/CHARTER-20260530-provider-catalog.md`, `docs/artifacts/decisions/ADR-0001-provider-catalog.md`, `docs/artifacts/explorations/EXP-20260530-provider-catalog-duplication.md`, `docs/artifacts/evidence/EVID-20260530-provider-catalog.md`, `docs/artifacts/memory/MEM-20260530-provider-catalog-implementation.md` |
-| Related Files | `src/bootstrap/provider_catalog.rs`, `src/bootstrap/provider_registry.rs`, `src/bootstrap/mod.rs`, `src/cli/args.rs`, `src/cli/runner.rs`, `tests/architecture_test.rs`, `tests/integration/provider_registry_test.rs`, `tests/integration/cli_test.rs`, `README.md`, `docs/intro.md`, `docs/quickstart.md`, `docs/project/ARCHITECTURE.md`, `docs/architecture.md`, `HARNESS.md` |
+| Related Files | `src/bootstrap/provider_catalog.rs`, `src/bootstrap/provider_registry.rs`, `src/bootstrap/mod.rs`, `src/cli/args.rs`, `src/cli/runner.rs`, `tests/architecture_test.rs`, `tests/integration/provider_registry_test.rs`, `tests/integration/cli_test.rs`, `README.md`, `CHANGELOG.md`, `docs/intro.md`, `docs/quickstart.md`, `docs/project/ARCHITECTURE.md`, `docs/architecture.md`, `HARNESS.md` |
 
 ## Starting Point
 
@@ -77,10 +77,18 @@ Implementation completed in this session. Evidence is recorded in `docs/artifact
 - Result: Completed.
 - Evidence: Created `docs/artifacts/evidence/EVID-20260530-provider-catalog.md` and `docs/artifacts/memory/MEM-20260530-provider-catalog-implementation.md`. `just check` passed outside the sandbox.
 
+### Step 7
+
+- Action: Add the assigned draft PR number to the changelog before marking the PR ready.
+- Files touched: `CHANGELOG.md`, `docs/artifacts/active/CHARTER-20260530-provider-catalog.md`, `docs/artifacts/active/EXEC-20260530-provider-catalog.md`, `docs/artifacts/evidence/EVID-20260530-provider-catalog.md`, `docs/artifacts/memory/MEM-20260530-provider-catalog-implementation.md`
+- Result: Completed.
+- Evidence: PR `#19` is now referenced in `CHANGELOG.md`; focused changelog and markdown checks passed; `just check` passed after the follow-up.
+
 ## Deviations From Charter
 
 - Rollback commit was not created. The worktree already had staged exploration artifacts and untracked provider-catalog planning artifacts before implementation started, so creating a rollback commit would have committed user-created work outside this execution scope.
 - The first `just check` run inside the sandbox failed in an existing HTTP unit test because sandbox permissions denied binding a local TCP listener. The same command was rerun outside the sandbox and passed.
+- The draft PR number was assigned after the implementation commit, so the `CHANGELOG.md` entry was added as a PR-readiness follow-up.
 
 ## Bugs Found
 
@@ -97,3 +105,5 @@ Implementation completed in this session. Evidence is recorded in `docs/artifact
 - Docs validation passed: `python3 scripts/check_markdown_frontmatter.py` and `mdbook build`.
 - Canonical gate passed outside the sandbox: `just check`.
 - Evidence pack documents the sandboxed `just check` failure and successful rerun.
+- `CHANGELOG.md` now references draft PR `#19`.
+- PR-readiness follow-up validation passed: `cargo test --test changelog_test`, `python3 scripts/check_markdown_frontmatter.py`, and `just check`.
