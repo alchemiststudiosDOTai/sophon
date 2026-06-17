@@ -43,7 +43,34 @@ pub fn render_text(response: &SearchResponse) -> String {
         }
         lines.push(String::new());
     }
+
+    let urls: Vec<&str> = response
+        .results
+        .iter()
+        .map(result_url)
+        .filter_map(|url| {
+            let trimmed = url.trim();
+            (!trimmed.is_empty()).then_some(trimmed)
+        })
+        .collect();
+
+    if !urls.is_empty() {
+        lines.push("URLs:".to_string());
+        for url in urls {
+            lines.push(format!("- {}", url));
+        }
+    }
+
     lines.join("\n")
+}
+
+fn result_url(result: &SearchResult) -> &str {
+    match result {
+        SearchResult::Web(r) => &r.url,
+        SearchResult::News(r) => &r.url,
+        SearchResult::Image(r) => &r.url,
+        SearchResult::Video(r) => &r.url,
+    }
 }
 
 pub fn render_fanout_text(response: &SearchBatchResponse) -> String {
@@ -122,6 +149,51 @@ mod tests {
         assert!(text.contains("Breaking update"));
         assert!(text.contains("[IMAGE] Rust Logo"));
         assert!(text.contains("[VIDEO] Rust Tutorial"));
+    }
+
+    #[test]
+    fn render_text_appends_url_list_at_end() {
+        let response = SearchResponse {
+            query: "rust".to_string(),
+            provider: "brave".to_string(),
+            results: vec![
+                SearchResult::Web(WebResult {
+                    title: "Rust Lang".to_string(),
+                    url: "https://rust-lang.org".to_string(),
+                    snippet: None,
+                    display_url: None,
+                }),
+                SearchResult::News(NewsResult {
+                    title: "Rust News".to_string(),
+                    url: " https://example.com/news ".to_string(),
+                    snippet: None,
+                    source: None,
+                    published_at: None,
+                }),
+                SearchResult::Image(ImageResult {
+                    title: "Missing URL".to_string(),
+                    url: "   ".to_string(),
+                    thumbnail_url: None,
+                    source: None,
+                }),
+                SearchResult::Video(VideoResult {
+                    title: "Rust Tutorial".to_string(),
+                    url: "https://example.com/video".to_string(),
+                    thumbnail_url: None,
+                    duration: None,
+                    published_at: None,
+                }),
+            ],
+            total_estimated: None,
+            next_page: None,
+        };
+
+        let text = render_text(&response);
+
+        assert!(text.ends_with(
+            "URLs:\n- https://rust-lang.org\n- https://example.com/news\n- https://example.com/video"
+        ));
+        assert!(!text.contains("-    "));
     }
 
     #[test]

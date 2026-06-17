@@ -62,6 +62,28 @@ sophon-cli "vector database benchmarks" --provider exa --limit 5
 sophon-cli "rust async trait" --provider all
 ```
 
+### Output format
+
+Each result is printed inline with its title and `URL:`. A trailing `URLs:` block collects every non-empty result link so they're easy to copy in one pass:
+
+```text
+Provider: brave
+Query: rust programming
+Results: 2
+
+1. [Rust Programming Language]
+   URL: https://www.rust-lang.org
+   A language empowering everyone to build reliable and efficient software.
+2. [Rust (programming language) - Wikipedia]
+   URL: https://en.wikipedia.org/wiki/Rust_(programming_language)
+
+URLs:
+- https://www.rust-lang.org
+- https://en.wikipedia.org/wiki/Rust_(programming_language)
+```
+
+Result ordering and inline `URL:` lines are unchanged; whitespace-only URLs are skipped in the `URLs:` list.
+
 ## Supported providers
 
 Real provider tokens:
